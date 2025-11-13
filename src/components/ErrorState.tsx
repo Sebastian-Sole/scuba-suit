@@ -1,11 +1,13 @@
 interface ErrorStateProps {
   message?: string
   onRetry?: () => void
+  onClose?: () => void
 }
 
 export function ErrorState({
   message = 'Failed to load data. Please try again.',
   onRetry,
+  onClose,
 }: ErrorStateProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
@@ -28,14 +30,24 @@ export function ErrorState({
         Something went wrong
       </h3>
       <p className="text-sm text-slate-600 mb-4 max-w-sm">{message}</p>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
-        >
-          Try Again
-        </button>
-      )}
+      <div className="flex gap-2">
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+          >
+            Try Again
+          </button>
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+          >
+            Close
+          </button>
+        )}
+      </div>
     </div>
   )
 }

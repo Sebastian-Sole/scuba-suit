@@ -48,14 +48,16 @@ function MapPage() {
       ? [searchParams.lon, searchParams.lat]
       : undefined,
   )
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; display?: string } | null>(null)
   // Grid data fetching disabled for now - no heatmap
   // const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch point data when map is clicked
   const handleMapClick = useCallback(
-    async (lat: number, lon: number) => {
+    async (lat: number, lon: number, display?: string) => {
       setIsLoadingPoint(true)
       setPointError(null)
+      setSelectedLocation({ lat, lon, display })
 
       // Update URL
       void navigate({
@@ -95,12 +97,12 @@ function MapPage() {
   )
 
   const handleSearchSelect = useCallback(
-    (lat: number, lon: number) => {
+    (lat: number, lon: number, display: string) => {
       // Pan map to location
       setMapCenter([lon, lat])
 
       // Fetch point data
-      handleMapClick(lat, lon)
+      handleMapClick(lat, lon, display)
     },
     [handleMapClick],
   )
@@ -121,6 +123,7 @@ function MapPage() {
             onSelectLocation={handleSearchSelect}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
+            displayText={selectedLocation?.display || (selectedLocation ? `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lon.toFixed(4)}` : '')}
           />
         </div>
       </div>
@@ -134,8 +137,8 @@ function MapPage() {
             selectedDate={selectedDate}
             onMapClick={handleMapClick}
             initialCenter={mapCenter}
-            hasSelection={selectedPoint !== null}
             isLoading={isLoadingPoint}
+            selectedLocation={selectedLocation}
           />
           {isLoadingPoint && (
             <div className="absolute top-4 right-4 bg-cyan-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 z-20">
@@ -160,6 +163,12 @@ function MapPage() {
                   handleMapClick(searchParams.lat, searchParams.lon)
                 }
               }}
+              onClose={() => {
+                setPointError(null)
+                setSelectedPoint(null)
+                setSelectedLocation(null)
+                void navigate({ search: {} as any })
+              }}
             />
           </div>
         ) : (
@@ -171,6 +180,7 @@ function MapPage() {
               onClose={() => {
                 setSelectedPoint(null)
                 setPointError(null)
+                setSelectedLocation(null)
                 // Clear URL params
                 void navigate({ search: {} as any })
               }}

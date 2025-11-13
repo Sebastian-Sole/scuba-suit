@@ -26,8 +26,8 @@ export interface SSTMapProps {
   onMapClick?: (lat: number, lon: number) => void
   initialCenter?: [number, number] // [lon, lat]
   initialZoom?: number
-  hasSelection?: boolean
   isLoading?: boolean
+  selectedLocation?: { lat: number; lon: number } | null
 }
 
 export function SSTMap({
@@ -37,8 +37,8 @@ export function SSTMap({
   onMapClick,
   initialCenter = [5, 55], // North Sea default
   initialZoom = 4,
-  hasSelection = false,
   isLoading = false,
+  selectedLocation = null,
 }: SSTMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
@@ -197,15 +197,36 @@ export function SSTMap({
     }
   }, [isMapLoaded])
 
-  // Hide marker when selection is cleared
+  // Update marker position when selectedLocation changes
   useEffect(() => {
-    if (!hasSelection && marker.current) {
+    if (!marker.current || !map.current) return
+
+    if (selectedLocation) {
+      const element = marker.current.getElement()
+      const newLngLat: [number, number] = [selectedLocation.lon, selectedLocation.lat]
+
+      // Set position
+      marker.current.setLngLat(newLngLat)
+
+      // Show marker with animation
+      requestAnimationFrame(() => {
+        element.style.opacity = '1'
+      })
+
+      // Center map on location
+      map.current.easeTo({
+        center: newLngLat,
+        duration: 800,
+        essential: true
+      })
+    } else {
+      // Hide marker when selection is cleared
       const element = marker.current.getElement()
       requestAnimationFrame(() => {
         element.style.opacity = '0'
       })
     }
-  }, [hasSelection])
+  }, [selectedLocation])
 
   // Update cursor style based on selection mode
   useEffect(() => {

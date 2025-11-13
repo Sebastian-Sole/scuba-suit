@@ -10,16 +10,25 @@ export interface SearchBarProps {
   onSelectLocation: (lat: number, lon: number, display: string) => void
   selectedDate?: string
   onDateChange?: (date: string) => void
+  displayText?: string
 }
 
-export function SearchBar({ onSelectLocation, selectedDate, onDateChange }: SearchBarProps) {
+export function SearchBar({ onSelectLocation, selectedDate, onDateChange, displayText }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Array<SearchResult>>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [isUserTyping, setIsUserTyping] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultsRef = useRef<Array<HTMLButtonElement | null>>([])
+
+  // Update query when displayText changes, but only if user is not actively typing
+  useEffect(() => {
+    if (displayText !== undefined && !isUserTyping) {
+      setQuery(displayText)
+    }
+  }, [displayText, isUserTyping])
 
   const handleSearch = useCallback(async (q: string) => {
     if (!q.trim()) {
@@ -45,14 +54,16 @@ export function SearchBar({ onSelectLocation, selectedDate, onDateChange }: Sear
     }
   }, [])
 
-  // Debounce search as user types
+  // Debounce search as user types (only when user is actively typing)
   useEffect(() => {
+    if (!isUserTyping) return // Don't search when displayText updates the query
+
     const timer = setTimeout(() => {
       handleSearch(query)
     }, 300) // 300ms debounce
 
     return () => clearTimeout(timer)
-  }, [query, handleSearch])
+  }, [query, handleSearch, isUserTyping])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,8 +73,9 @@ export function SearchBar({ onSelectLocation, selectedDate, onDateChange }: Sear
       const result = results[selectedIndex]
       onSelectLocation(result.lat, result.lon, result.display)
       setShowResults(false)
-      setQuery('')
+      setResults([])
       setSelectedIndex(-1)
+      setIsUserTyping(false)
     } else {
       handleSearch(query)
     }
@@ -108,7 +120,10 @@ export function SearchBar({ onSelectLocation, selectedDate, onDateChange }: Sear
           ref={inputRef}
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setIsUserTyping(true)
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => results.length > 0 && setShowResults(true)}
           placeholder="Search for a location..."
@@ -156,8 +171,9 @@ export function SearchBar({ onSelectLocation, selectedDate, onDateChange }: Sear
               onClick={() => {
                 onSelectLocation(result.lat, result.lon, result.display)
                 setShowResults(false)
-                setQuery('')
+                setResults([])
                 setSelectedIndex(-1)
+                setIsUserTyping(false)
               }}
               className={`w-full px-4 py-3 text-left transition-colors border-b border-slate-100 last:border-b-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 min-h-[44px] ${
                 i === selectedIndex ? 'bg-cyan-50' : 'hover:bg-slate-50'
