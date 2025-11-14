@@ -9,11 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StoreRouteImport } from './routes/store'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiGeocodeRouteImport } from './routes/api/geocode'
 import { Route as ApiSstPointRouteImport } from './routes/api/sst/point'
 import { Route as ApiSstGridRouteImport } from './routes/api/sst/grid'
 
+const StoreRoute = StoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,12 +49,16 @@ const ApiSstGridRoute = ApiSstGridRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
   '/api/sst/point': typeof ApiSstPointRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
   '/api/sst/point': typeof ApiSstPointRoute
@@ -50,20 +66,43 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
   '/api/sst/point': typeof ApiSstPointRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/geocode' | '/api/sst/grid' | '/api/sst/point'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/store'
+    | '/api/geocode'
+    | '/api/sst/grid'
+    | '/api/sst/point'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/geocode' | '/api/sst/grid' | '/api/sst/point'
-  id: '__root__' | '/' | '/api/geocode' | '/api/sst/grid' | '/api/sst/point'
+  to:
+    | '/'
+    | '/about'
+    | '/store'
+    | '/api/geocode'
+    | '/api/sst/grid'
+    | '/api/sst/point'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/store'
+    | '/api/geocode'
+    | '/api/sst/grid'
+    | '/api/sst/point'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  StoreRoute: typeof StoreRoute
   ApiGeocodeRoute: typeof ApiGeocodeRoute
   ApiSstGridRoute: typeof ApiSstGridRoute
   ApiSstPointRoute: typeof ApiSstPointRoute
@@ -71,6 +110,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/store': {
+      id: '/store'
+      path: '/store'
+      fullPath: '/store'
+      preLoaderRoute: typeof StoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +157,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  StoreRoute: StoreRoute,
   ApiGeocodeRoute: ApiGeocodeRoute,
   ApiSstGridRoute: ApiSstGridRoute,
   ApiSstPointRoute: ApiSstPointRoute,

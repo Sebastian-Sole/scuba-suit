@@ -1,8 +1,10 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
-import Header from '../components/Header'
+import Navbar from '../components/Navbar'
+import { ThemeProvider } from '../components/ThemeProvider'
+import { NavbarProvider } from '../components/NavbarContext'
 
 import appCss from '../styles.css?url'
 
@@ -17,7 +19,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Dive Suit Recommender - Find the Right Wetsuit',
+        title: 'Dive Intel - Find the Right Wetsuit',
       },
       {
         name: 'description',
@@ -33,8 +35,24 @@ export const Route = createRootRoute({
     ],
   }),
 
+  component: RootComponent,
   shellComponent: RootDocument,
 })
+
+function RootComponent() {
+  return (
+    <ThemeProvider defaultTheme="system" storageKey="dive-intel-theme">
+      <NavbarProvider>
+        <div className="h-screen bg-background flex flex-col overflow-hidden">
+          <Navbar />
+          <main className="flex-1 overflow-hidden">
+            <Outlet />
+          </main>
+        </div>
+      </NavbarProvider>
+    </ThemeProvider>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

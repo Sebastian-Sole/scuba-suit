@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { DateTimePicker } from '@/components/DateTimePicker'
 
 interface SearchResult {
   lat: number
@@ -8,12 +9,12 @@ interface SearchResult {
 
 export interface SearchBarProps {
   onSelectLocation: (lat: number, lon: number, display: string) => void
-  selectedDate?: string
-  onDateChange?: (date: string) => void
+  selectedDateTime?: string
+  onDateTimeChange?: (datetime: string) => void
   displayText?: string
 }
 
-export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDate, onDateChange, displayText }: SearchBarProps) {
+export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDateTime, onDateTimeChange, displayText }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Array<SearchResult>>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -131,22 +132,19 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
           aria-autocomplete="list"
           aria-controls="search-results"
           aria-expanded={showResults && results.length > 0}
-          className="flex-1 px-4 py-2 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[44px]"
+          className="flex-1 px-4 py-2 text-base rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
         />
         <div className="flex gap-2">
-          {selectedDate && onDateChange && (
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => onDateChange(e.target.value)}
-              aria-label="Select date"
-              className="px-4 py-2 text-base rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 min-h-[44px]"
+          {selectedDateTime && onDateTimeChange && (
+            <DateTimePicker
+              value={selectedDateTime}
+              onChange={onDateTimeChange}
             />
           )}
           <button
             type="submit"
             disabled={isSearching || !query.trim()}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px]"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px]"
           >
             {isSearching ? 'Searching...' : 'Search'}
           </button>
@@ -158,7 +156,7 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
         <div
           id="search-results"
           role="listbox"
-          className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-lg border border-slate-200 z-50 max-h-64 overflow-y-auto"
+          className="absolute top-full mt-2 w-full bg-background rounded-lg shadow-lg border z-50 max-h-64 overflow-y-auto"
         >
           {results.map((result, i) => (
             <button
@@ -175,12 +173,12 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
                 setSelectedIndex(-1)
                 setIsUserTyping(false)
               }}
-              className={`w-full px-4 py-3 text-left transition-colors border-b border-slate-100 last:border-b-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 min-h-[44px] ${
-                i === selectedIndex ? 'bg-cyan-50' : 'hover:bg-slate-50'
+              className={`w-full px-4 py-3 text-left transition-colors border-b last:border-b-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary min-h-[44px] ${
+                i === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
               }`}
             >
-              <div className="text-sm text-slate-900">{result.display}</div>
-              <div className="text-xs text-slate-500">
+              <div className="text-sm font-medium">{result.display}</div>
+              <div className="text-xs text-muted-foreground">
                 {result.lat.toFixed(4)}, {result.lon.toFixed(4)}
               </div>
             </button>

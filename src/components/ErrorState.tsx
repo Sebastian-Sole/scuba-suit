@@ -11,7 +11,7 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
-      <div className="w-16 h-16 mb-4 text-red-500">
+      <div className="w-16 h-16 mb-4 text-destructive">
         <svg
           fill="none"
           stroke="currentColor"
@@ -26,15 +26,15 @@ export function ErrorState({
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-slate-900 mb-2">
+      <h3 className="text-lg font-semibold mb-2">
         Something went wrong
       </h3>
-      <p className="text-sm text-slate-600 mb-4 max-w-sm">{message}</p>
+      <p className="text-sm text-muted-foreground mb-4 max-w-sm">{message}</p>
       <div className="flex gap-2">
         {onRetry && (
           <button
             onClick={onRetry}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             Try Again
           </button>
@@ -42,7 +42,7 @@ export function ErrorState({
         {onClose && (
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
             Close
           </button>

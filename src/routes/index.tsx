@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import type { SidebarRow } from '@/components/SidebarTable'
 import { ErrorState } from '@/components/ErrorState'
@@ -8,12 +8,13 @@ import { SearchBar } from '@/components/SearchBar'
 import { SidebarTable } from '@/components/SidebarTable'
 import { SSTMap } from '@/components/SSTMap'
 import { getTodayISO } from '@/lib/dates'
+import { useNavbarContent } from '@/components/NavbarContext'
 
 // URL search params schema
 const searchSchema = z.object({
   lat: z.number().optional(),
   lon: z.number().optional(),
-  date: z.string().optional(),
+  datetime: z.string().optional(), // ISO datetime string (YYYY-MM-DDTHH:mm:ss)
 })
 
 export const Route = createFileRoute('/')({
@@ -34,10 +35,16 @@ interface PointData {
 function MapPage() {
   const navigate = useNavigate()
   const searchParams = useSearch({ from: '/' })
+  const { setNavbarContent } = useNavbarContent()
 
-  const [selectedDate, setSelectedDate] = useState(
-    searchParams.date || getTodayISO(),
-  )
+  // Initialize with datetime from URL or default to today at noon
+  const [selectedDateTime, setSelectedDateTime] = useState(() => {
+    if (searchParams.datetime) {
+      return searchParams.datetime
+    }
+    const today = getTodayISO()
+    return `${today}T12:00:00`
+  })
   // const [points, setPoints] = useState<MapPoint[]>([]) // Disabled for now - no heatmap
   // const [isLoadingGrid, setIsLoadingGrid] = useState(false) // Disabled for now - no heatmap
   const [selectedPoint, setSelectedPoint] = useState<PointData | null>(null)
@@ -74,11 +81,15 @@ function MapPage() {
         search: {
           lat,
           lon,
-          date: selectedDate,
+          datetime: selectedDateTime,
         } as any,
       })
 
-      const url = `/api/sst/point?lat=${lat}&lon=${lon}&date=${selectedDate}&years=7&forecastDays=7`
+      // Extract date and time from datetime string
+      const [date, timeWithSeconds] = selectedDateTime.split('T')
+      const time = timeWithSeconds ? timeWithSeconds.substring(0, 5) : '12:00' // HH:mm
+
+      const url = `/api/sst/point?lat=${lat}&lon=${lon}&date=${date}&time=${time}&years=7&forecastDays=7`
 
       try {
         const response = await fetch(url)
@@ -103,7 +114,7 @@ function MapPage() {
         setIsLoadingPoint(false)
       }
     },
-    [selectedDate, navigate],
+    [selectedDateTime, navigate],
   )
 
   const handleSearchSelect = useCallback(
@@ -121,27 +132,53 @@ function MapPage() {
     }
   }, []) // Only run once on mount
 
-  return (
-    <div className="h-screen w-full flex flex-col">
-      {/* Search bar */}
-      <div className="bg-white shadow-md p-3 sm:p-4 z-20">
-        <div className="max-w-2xl mx-auto">
-          <SearchBar
-            onSelectLocation={handleSearchSelect}
-            selectedDate={selectedDate}
-            onDateChange={setSelectedDate}
-            displayText={displayText}
-          />
-        </div>
-      </div>
+  // Memoize the handleDateTimeChange callback
+  const handleDateTimeChange = useCallback((datetime: string) => {
+    setSelectedDateTime(datetime)
+  }, [])
 
+  // Refetch data when datetime changes (if we have a selected location)
+  // Using a ref to track if we should skip the initial mount
+  const isInitialMount = useRef(true)
+  useEffect(() => {
+    // Skip on initial mount to avoid double-fetching
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    if (selectedLocation) {
+      handleMapClick(selectedLocation.lat, selectedLocation.lon, selectedLocation.display)
+    }
+  }, [selectedDateTime]) // Note: handleMapClick depends on selectedDateTime, so this will refetch
+
+  // Memoize the SearchBar element to prevent unnecessary recreations
+  const searchBarElement = useMemo(() => (
+    <SearchBar
+      onSelectLocation={handleSearchSelect}
+      selectedDateTime={selectedDateTime}
+      onDateTimeChange={handleDateTimeChange}
+      displayText={displayText}
+    />
+  ), [handleSearchSelect, selectedDateTime, handleDateTimeChange, displayText])
+
+  // Set navbar content with SearchBar
+  useEffect(() => {
+    setNavbarContent(searchBarElement)
+
+    // Clean up when component unmounts
+    return () => setNavbarContent(null)
+  }, [setNavbarContent, searchBarElement])
+
+  return (
+    <div className="h-full w-full flex">
       {/* Map and sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Map */}
         <div className="flex-1 relative">
           <SSTMap
             points={[]}
-            selectedDate={selectedDate}
+            selectedDate={selectedDateTime.split('T')[0]} // Pass just the date part for map display
             onMapClick={handleMapClick}
             initialCenter={initialCenter}
             isLoading={isLoadingPoint}
@@ -158,11 +195,11 @@ function MapPage() {
 
         {/* Sidebar */}
         {isLoadingPoint && !selectedPoint ? (
-          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-white shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none">
+          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none">
             <LoadingSkeleton />
           </div>
         ) : pointError ? (
-          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-white shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none flex items-center justify-center">
+          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none flex items-center justify-center">
             <ErrorState
               message={pointError}
               onRetry={() => {

@@ -43,21 +43,21 @@ export function SidebarTable({
       />
 
       {/* Sidebar/Drawer */}
-      <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-white shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none">
+      <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none border-l">
       {/* Header */}
-      <div className="sticky top-0 bg-slate-900 text-white p-4 z-10">
+      <div className="sticky top-0 bg-primary text-primary-foreground p-4 z-10">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h2 className="text-lg font-semibold mb-1">
               {location.display || 'Selected Location'}
             </h2>
-            <p className="text-sm text-slate-300">
+            <p className="text-sm opacity-90">
               {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-300 hover:text-white transition-colors"
+            className="opacity-90 hover:opacity-100 transition-opacity"
             aria-label="Close sidebar"
           >
             <svg
@@ -80,17 +80,17 @@ export function SidebarTable({
         {stats && (
           <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
             <div>
-              <div className="text-slate-400">Mean</div>
+              <div className="opacity-80">Mean</div>
               <div className="font-semibold">{stats.mean.toFixed(1)}°C</div>
             </div>
             <div>
-              <div className="text-slate-400">Range</div>
+              <div className="opacity-80">Range</div>
               <div className="font-semibold">
                 {stats.min.toFixed(1)}-{stats.max.toFixed(1)}°C
               </div>
             </div>
             <div>
-              <div className="text-slate-400">P10-P90</div>
+              <div className="opacity-80">P10-P90</div>
               <div className="font-semibold">
                 {stats.p10.toFixed(1)}-{stats.p90.toFixed(1)}°C
               </div>
@@ -103,14 +103,14 @@ export function SidebarTable({
       <div className="p-4">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200">
-              <th className="text-left py-2 font-semibold text-slate-700">
+            <tr className="border-b">
+              <th className="text-left py-2 font-semibold">
                 Date
               </th>
-              <th className="text-right py-2 font-semibold text-slate-700">
+              <th className="text-right py-2 font-semibold">
                 Temp
               </th>
-              <th className="text-right py-2 font-semibold text-slate-700">
+              <th className="text-right py-2 font-semibold">
                 Suit
               </th>
             </tr>
@@ -123,35 +123,35 @@ export function SidebarTable({
               return (
                 <tr
                   key={i}
-                  className={`border-b border-slate-100 ${
-                    isSelected ? 'bg-cyan-50' : ''
+                  className={`border-b ${
+                    isSelected ? 'bg-accent' : ''
                   }`}
                 >
-                  <td className="py-2 text-slate-700">
+                  <td className="py-2">
                     {row.date}
                     {isForecast && (
-                      <span className="ml-1 text-xs text-slate-500">
+                      <span className="ml-1 text-xs text-muted-foreground">
                         (forecast)
                       </span>
                     )}
                   </td>
-                  <td className="py-2 text-right font-mono text-slate-900">
+                  <td className="py-2 text-right font-mono">
                     {row.tempC !== null ? `${row.tempC.toFixed(1)}°C` : '—'}
                   </td>
                   <td className="py-2 text-right">
                     {row.suit ? (
                       <div className="flex flex-col items-end">
-                        <span className="font-medium text-slate-900">
+                        <span className="font-medium">
                           {SUIT_LABELS[row.suit.type as keyof typeof SUIT_LABELS]}
                         </span>
                         {row.suit.notes && (
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground">
                             {row.suit.notes.split(' - ')[0]}
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </td>
                 </tr>
@@ -162,40 +162,40 @@ export function SidebarTable({
 
         {/* Aggregate Recommendation */}
         {stats && (
-          <div className="mt-6 p-4 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-lg border border-cyan-200">
-            <h3 className="text-sm font-semibold text-slate-900 mb-3">
+          <div className="mt-6 p-4 bg-accent/50 rounded-lg border">
+            <h3 className="text-sm font-semibold mb-3">
               Overall Recommendation
             </h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-700">Average Temperature:</span>
-                <span className="text-sm font-semibold text-slate-900">
+                <span className="text-sm">Average Temperature:</span>
+                <span className="text-sm font-semibold">
                   {stats.mean.toFixed(1)}°C
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-slate-700">Temperature Range:</span>
-                <span className="text-sm font-semibold text-slate-900">
+                <span className="text-sm">Temperature Range:</span>
+                <span className="text-sm font-semibold">
                   {stats.min.toFixed(1)}°C - {stats.max.toFixed(1)}°C
                 </span>
               </div>
-              <div className="mt-4 pt-4 border-t border-cyan-200">
-                <div className="text-sm text-slate-700 mb-2">
+              <div className="mt-4 pt-4 border-t">
+                <div className="text-sm mb-2">
                   Recommended Suit:
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="flex-1">
-                    <div className="text-base font-bold text-cyan-900">
+                    <div className="text-base font-bold">
                       {SUIT_LABELS[suitForTemp(stats.mean).type]}
                     </div>
                     {suitForTemp(stats.mean).notes && (
-                      <div className="text-xs text-slate-600 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         {suitForTemp(stats.mean).notes}
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="text-xs text-slate-500 mt-3">
+                <div className="text-xs text-muted-foreground mt-3">
                   Based on average temperature over historical and forecast data.
                   Consider bringing backup options for temperature extremes.
                 </div>

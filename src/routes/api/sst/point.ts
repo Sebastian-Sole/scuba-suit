@@ -14,6 +14,7 @@ const pointQuerySchema = z.object({
   lat: z.string().regex(/^-?\d+\.?\d*$/),
   lon: z.string().regex(/^-?\d+\.?\d*$/),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  time: z.string().regex(/^\d{2}:\d{2}$/).optional(), // HH:mm format
   years: z.string().optional().default('7'),
   forecastDays: z.string().optional().default('7'),
 })
@@ -33,17 +34,20 @@ export const Route = createFileRoute('/api/sst/point')({
           )
         }
 
-        const { lat: latStr, lon: lonStr, date, years: yearsStr, forecastDays: forecastDaysStr } = parseResult.data
+        const { lat: latStr, lon: lonStr, date, time, years: yearsStr, forecastDays: forecastDaysStr } = parseResult.data
         const lat = parseFloat(latStr)
         const lon = parseFloat(lonStr)
         const years = parseInt(yearsStr)
         const forecastDays = parseInt(forecastDaysStr)
 
+        // Parse hour from time parameter (HH:mm)
+        const hour = time ? parseInt(time.split(':')[0]) : undefined
+
         if (!isValidISODate(date)) {
           return json({ error: 'Invalid date format' }, { status: 400 })
         }
 
-        const cacheKey = `point:${lat.toFixed(3)}:${lon.toFixed(3)}:${date}:${years}:${forecastDays}`
+        const cacheKey = `point:${lat.toFixed(3)}:${lon.toFixed(3)}:${date}:${time || 'avg'}:${years}:${forecastDays}`
         const cached = cache.get(cacheKey)
         if (cached) {
           return json(cached, {
@@ -56,7 +60,7 @@ export const Route = createFileRoute('/api/sst/point')({
         try {
           const historicalDates = getHistoricalDates(date, years)
           const historicalTemps = await Promise.all(
-            historicalDates.map((d) => fetchSSTDayAvg(lat, lon, d)),
+            historicalDates.map((d) => fetchSSTDayAvg(lat, lon, d, hour)),
           )
 
           const historicalRows = historicalDates.map((d, i) => ({
@@ -66,7 +70,7 @@ export const Route = createFileRoute('/api/sst/point')({
             kind: 'historical' as const,
           }))
 
-          const selectedTemp = await fetchSSTWithNudge(lat, lon, date, 3)
+          const selectedTemp = await fetchSSTWithNudge(lat, lon, date, 3, hour)
           const selectedRow = {
             date,
             tempC: selectedTemp,
@@ -76,7 +80,7 @@ export const Route = createFileRoute('/api/sst/point')({
 
           const forecastDates = getForecastDates(date, forecastDays)
           const forecastTemps = await Promise.all(
-            forecastDates.map((d) => fetchSSTDayAvg(lat, lon, d)),
+            forecastDates.map((d) => fetchSSTDayAvg(lat, lon, d, hour)),
           )
 
           const forecastRows = forecastDates.map((d, i) => ({

@@ -12,13 +12,15 @@ export interface SSTPoint {
 }
 
 /**
- * Fetch SST day average for a single coordinate
+ * Fetch SST for a single coordinate at a specific time or day average
  * Returns null if no data available (land, ice, or API error)
+ * @param hour - Optional hour (0-23). If provided, returns temp at that hour. Otherwise returns day average.
  */
 export async function fetchSSTDayAvg(
   lat: number,
   lon: number,
   dateISO: string,
+  hour?: number,
 ): Promise<number | null> {
   const qs = new URLSearchParams({
     latitude: lat.toFixed(4),
@@ -49,6 +51,11 @@ export async function fetchSSTDayAvg(
       j?.hourly?.sea_surface_temperature ?? []
 
     if (!temps.length) return null
+
+    // If specific hour requested, return that hour's temperature
+    if (hour !== undefined && hour >= 0 && hour < temps.length) {
+      return temps[hour]
+    }
 
     // Filter out null values (ice coverage, land, etc.)
     const validTemps = temps.filter((t): t is number => t !== null)
@@ -124,14 +131,16 @@ export async function fetchSSTGrid(
 /**
  * Attempt to find valid SST by nudging coordinate seaward
  * Useful for coastal/land-edge clicks that return null
+ * @param hour - Optional hour (0-23) for specific time temperature
  */
 export async function fetchSSTWithNudge(
   lat: number,
   lon: number,
   dateISO: string,
   maxAttempts = 3,
+  hour?: number,
 ): Promise<number | null> {
-  let temp = await fetchSSTDayAvg(lat, lon, dateISO)
+  let temp = await fetchSSTDayAvg(lat, lon, dateISO, hour)
   if (temp !== null) return temp
 
   // Try nudging slightly in different directions (simplified: just east/west)
@@ -147,6 +156,7 @@ export async function fetchSSTWithNudge(
       attempts[i].lat,
       attempts[i].lon,
       dateISO,
+      hour,
     )
     if (temp !== null) return temp
   }

@@ -23,7 +23,7 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
             setIsMinimized(false)
           }
         }}
-        className="bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-slate-200 hover:bg-white transition-all flex items-center gap-2 text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        className="bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border hover:bg-background transition-all flex items-center gap-2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="Show map help menu"
         aria-expanded="false"
       >
@@ -35,13 +35,13 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
 
   return (
     <div
-      className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 overflow-hidden min-w-[240px]"
+      className="bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border overflow-hidden min-w-[240px]"
       role="region"
       aria-label="Map interaction guide"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
-        <div className="flex items-center gap-2 text-slate-700 font-medium text-sm">
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
+        <div className="flex items-center gap-2 font-medium text-sm">
           <Info className="w-4 h-4" aria-hidden="true" />
           <span>Map Guide</span>
         </div>
@@ -53,7 +53,7 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
               setIsMinimized(true)
             }
           }}
-          className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
           aria-label="Minimize map help menu"
           aria-expanded="true"
         >
@@ -69,8 +69,8 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
             onClick={onToggleSelectionMode}
             className={`w-full px-3 py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
               isSelectionMode
-                ? 'bg-cyan-600 text-white hover:bg-cyan-700'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
             aria-pressed={isSelectionMode}
           >
@@ -81,11 +81,11 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
 
         {/* Selected Coordinates */}
         <div>
-          <div className="text-slate-500 uppercase tracking-wide font-semibold mb-1">
+          <div className="text-muted-foreground uppercase tracking-wide font-semibold mb-1">
             Selected Location
           </div>
           <div
-            className="font-mono text-slate-900"
+            className="font-mono"
             aria-live="polite"
             aria-atomic="true"
           >
@@ -97,19 +97,19 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
 
         {/* Keyboard Shortcuts (placeholder) */}
         <div className="opacity-50">
-          <div className="text-slate-500 uppercase tracking-wide font-semibold mb-1">
+          <div className="text-muted-foreground uppercase tracking-wide font-semibold mb-1">
             Keyboard Shortcuts
           </div>
-          <div className="text-slate-600 italic">
+          <div className="text-muted-foreground italic">
             Coming soon
           </div>
         </div>
 
         {/* Loading indicator */}
         {isLoading && (
-          <div className="pt-2 border-t border-slate-200">
+          <div className="pt-2 border-t">
             <div
-              className="text-cyan-600 animate-pulse"
+              className="text-primary animate-pulse"
               role="status"
               aria-live="polite"
             >
