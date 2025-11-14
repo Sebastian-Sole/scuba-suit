@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 interface SearchResult {
   lat: number
@@ -13,7 +13,7 @@ export interface SearchBarProps {
   displayText?: string
 }
 
-export function SearchBar({ onSelectLocation, selectedDate, onDateChange, displayText }: SearchBarProps) {
+export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDate, onDateChange, displayText }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Array<SearchResult>>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -189,4 +189,4 @@ export function SearchBar({ onSelectLocation, selectedDate, onDateChange, displa
       )}
     </div>
   )
-}
+})

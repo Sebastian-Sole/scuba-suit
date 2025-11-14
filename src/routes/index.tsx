@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import type { SidebarRow } from '@/components/SidebarTable'
 import { ErrorState } from '@/components/ErrorState'
@@ -43,12 +43,22 @@ function MapPage() {
   const [selectedPoint, setSelectedPoint] = useState<PointData | null>(null)
   const [isLoadingPoint, setIsLoadingPoint] = useState(false)
   const [pointError, setPointError] = useState<string | null>(null)
-  const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(
-    searchParams.lat && searchParams.lon
-      ? [searchParams.lon, searchParams.lat]
-      : undefined,
-  )
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; display?: string } | null>(null)
+
+  // Memoize initial center to prevent map reinitialization
+  const initialCenter = useMemo<[number, number] | undefined>(() => {
+    if (searchParams.lat && searchParams.lon) {
+      return [searchParams.lon, searchParams.lat]
+    }
+    return undefined
+  }, [searchParams.lat, searchParams.lon])
+
+  // Memoize displayText to prevent SearchBar rerenders
+  const displayText = useMemo(() => {
+    if (!selectedLocation) return ''
+    if (selectedLocation.display) return selectedLocation.display
+    return `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lon.toFixed(4)}`
+  }, [selectedLocation])
   // Grid data fetching disabled for now - no heatmap
   // const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
@@ -98,10 +108,7 @@ function MapPage() {
 
   const handleSearchSelect = useCallback(
     (lat: number, lon: number, display: string) => {
-      // Pan map to location
-      setMapCenter([lon, lat])
-
-      // Fetch point data
+      // Just fetch point data - SSTMap will handle centering via selectedLocation prop
       handleMapClick(lat, lon, display)
     },
     [handleMapClick],
@@ -123,7 +130,7 @@ function MapPage() {
             onSelectLocation={handleSearchSelect}
             selectedDate={selectedDate}
             onDateChange={setSelectedDate}
-            displayText={selectedLocation?.display || (selectedLocation ? `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lon.toFixed(4)}` : '')}
+            displayText={displayText}
           />
         </div>
       </div>
@@ -136,7 +143,7 @@ function MapPage() {
             points={[]}
             selectedDate={selectedDate}
             onMapClick={handleMapClick}
-            initialCenter={mapCenter}
+            initialCenter={initialCenter}
             isLoading={isLoadingPoint}
             selectedLocation={selectedLocation}
           />

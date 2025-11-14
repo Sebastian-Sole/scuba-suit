@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { MapPin } from 'lucide-react'
@@ -30,7 +30,7 @@ export interface SSTMapProps {
   selectedLocation?: { lat: number; lon: number } | null
 }
 
-export function SSTMap({
+export const SSTMap = memo(function SSTMap({
   points,
   selectedDate,
   onMapMove,
@@ -82,7 +82,7 @@ export function SSTMap({
       map.current?.remove()
       map.current = null
     }
-  }, [initialCenter, initialZoom])
+  }, []) // Only run once on mount
 
   // Handle map movement - disabled for now (no heatmap)
   // useEffect(() => {
@@ -122,15 +122,6 @@ export function SSTMap({
 
       // Exit selection mode after selecting
       setIsSelectionMode(false)
-
-      // Center map on selected location with smooth animation
-      if (map.current) {
-        map.current.easeTo({
-          center: [lon, lat],
-          duration: 800, // 800ms smooth animation
-          essential: true
-        })
-      }
 
       // Update marker position - set position immediately, animate styles
       if (marker.current) {
@@ -197,6 +188,22 @@ export function SSTMap({
     }
   }, [isMapLoaded])
 
+  // Pan map to new center when initialCenter changes (but don't reinitialize)
+  useEffect(() => {
+    if (!map.current) return
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!initialCenter) return
+
+    // Only pan if map is already initialized
+    if (map.current.loaded()) {
+      map.current.easeTo({
+        center: initialCenter,
+        duration: 800,
+        essential: true
+      })
+    }
+  }, [initialCenter])
+
   // Update marker position when selectedLocation changes
   useEffect(() => {
     if (!marker.current || !map.current) return
@@ -205,7 +212,7 @@ export function SSTMap({
       const element = marker.current.getElement()
       const newLngLat: [number, number] = [selectedLocation.lon, selectedLocation.lat]
 
-      // Set position
+      // Set marker position
       marker.current.setLngLat(newLngLat)
 
       // Show marker with animation
@@ -213,12 +220,21 @@ export function SSTMap({
         element.style.opacity = '1'
       })
 
-      // Center map on location
-      map.current.easeTo({
-        center: newLngLat,
-        duration: 800,
-        essential: true
-      })
+      // Only pan map if the location was NOT set via map click
+      // (map click already pans in the click handler)
+      // We can detect this by checking if selectedCoords matches selectedLocation
+      const isFromMapClick =
+        selectedCoords !== null &&
+        selectedCoords.lat === selectedLocation.lat &&
+        selectedCoords.lon === selectedLocation.lon
+
+      if (!isFromMapClick && map.current.loaded()) {
+        map.current.easeTo({
+          center: newLngLat,
+          duration: 800,
+          essential: true
+        })
+      }
     } else {
       // Hide marker when selection is cleared
       const element = marker.current.getElement()
@@ -226,7 +242,7 @@ export function SSTMap({
         element.style.opacity = '0'
       })
     }
-  }, [selectedLocation])
+  }, [selectedLocation, selectedCoords])
 
   // Update cursor style based on selection mode
   useEffect(() => {
@@ -321,4 +337,4 @@ export function SSTMap({
       )}
     </div>
   )
-}
+})
