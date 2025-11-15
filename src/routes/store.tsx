@@ -1,14 +1,83 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState, useMemo } from 'react'
+import { Menu } from 'lucide-react'
+import { StoreSidebar } from '@/components/StoreSidebar'
+import { ProductGrid } from '@/components/ProductGrid'
+import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { products, priceRanges } from '@/lib/products'
 
 export const Route = createFileRoute('/store')({
   component: StorePage,
 })
 
 function StorePage() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null)
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      // Filter by category
+      if (selectedCategory && product.category !== selectedCategory) {
+        return false
+      }
+
+      // Filter by price range
+      if (selectedPriceRange) {
+        const range = priceRanges.find((r) => r.name === selectedPriceRange)
+        if (range && (product.price < range.min || product.price >= range.max)) {
+          return false
+        }
+      }
+
+      // Filter by brand
+      if (selectedBrand && product.brand !== selectedBrand) {
+        return false
+      }
+
+      return true
+    })
+  }, [selectedCategory, selectedPriceRange, selectedBrand])
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold">Store</h1>
-      <p className="mt-4 text-muted-foreground">Coming Soon</p>
+    <div className="flex min-h-screen">
+      {/* Mobile Sidebar Toggle */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetTrigger asChild className="md:hidden fixed top-20 left-4 z-40">
+          <Button variant="outline" size="icon">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-80 p-0">
+          <StoreSidebar
+            selectedCategory={selectedCategory}
+            selectedPriceRange={selectedPriceRange}
+            selectedBrand={selectedBrand}
+            onCategoryChange={setSelectedCategory}
+            onPriceRangeChange={setSelectedPriceRange}
+            onBrandChange={setSelectedBrand}
+          />
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block md:sticky md:top-0 md:h-screen">
+        <StoreSidebar
+          selectedCategory={selectedCategory}
+          selectedPriceRange={selectedPriceRange}
+          selectedBrand={selectedBrand}
+          onCategoryChange={setSelectedCategory}
+          onPriceRangeChange={setSelectedPriceRange}
+          onBrandChange={setSelectedBrand}
+        />
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-1 p-6 md:p-8 lg:p-12">
+        <ProductGrid products={filteredProducts} />
+      </main>
     </div>
   )
 }

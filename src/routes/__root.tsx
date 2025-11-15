@@ -78,7 +78,7 @@ function RootComponent() {
       <NavbarProvider>
         <div className="h-screen bg-background flex flex-col overflow-hidden">
           <Navbar />
-          <main className="flex-1 overflow-hidden">
+          <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
         </div>
