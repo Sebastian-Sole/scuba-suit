@@ -1,6 +1,8 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Home, Info, Menu, ShoppingBag, X } from 'lucide-react'
+import { Home, Info, MapPin, Menu, ShoppingBag } from 'lucide-react'
+import { useNavbarContent } from './NavbarContext'
+import { ThemeToggle } from './ThemeToggle'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -16,11 +18,10 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-import { ThemeToggle } from './ThemeToggle'
-import { useNavbarContent } from './NavbarContext'
 
 const navItems = [
-  { to: '/', label: 'Map', icon: Home },
+  { to: '/', label: 'Home', icon: Home },
+  { to: '/map', label: 'Map', icon: MapPin },
   { to: '/about', label: 'About', icon: Info },
   { to: '/store', label: 'Store', icon: ShoppingBag },
 ]
@@ -28,6 +29,10 @@ const navItems = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { navbarContent } = useNavbarContent()
+  const routerState = useRouterState()
+
+  // Only show navbar content on /map route
+  const showNavbarContent = routerState.location.pathname === '/map'
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,8 +57,8 @@ export default function Navbar() {
               </SheetTitle>
             </SheetHeader>
 
-            {/* Mobile search bar */}
-            {navbarContent && (
+            {/* Mobile search bar - only on map route */}
+            {showNavbarContent && navbarContent && (
               <div className="mt-6 pb-4 border-b">{navbarContent}</div>
             )}
 
@@ -110,8 +115,8 @@ export default function Navbar() {
             </NavigationMenuList>
           </NavigationMenu>
 
-          {/* Center: SearchBar */}
-          {navbarContent && (
+          {/* Center: SearchBar - only on map route */}
+          {showNavbarContent && navbarContent && (
             <div className="flex-1 max-w-2xl mx-6">{navbarContent}</div>
           )}
 

@@ -12,9 +12,10 @@ export interface SearchBarProps {
   selectedDateTime?: string
   onDateTimeChange?: (datetime: string) => void
   displayText?: string
+  onSearch?: () => void // Optional callback when search button is clicked
 }
 
-export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDateTime, onDateTimeChange, displayText }: SearchBarProps) {
+export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDateTime, onDateTimeChange, displayText, onSearch }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Array<SearchResult>>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -77,7 +78,15 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
       setResults([])
       setSelectedIndex(-1)
       setIsUserTyping(false)
+      // If onSearch is provided, call it (for landing page to navigate)
+      if (onSearch) {
+        onSearch()
+      }
+    } else if (onSearch) {
+      // If onSearch is provided, call it instead of searching
+      onSearch()
     } else {
+      // Default behavior: search for locations
       handleSearch(query)
     }
   }
@@ -168,6 +177,7 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
               aria-selected={i === selectedIndex}
               onClick={() => {
                 onSelectLocation(result.lat, result.lon, result.display)
+                setQuery(result.display)
                 setShowResults(false)
                 setResults([])
                 setSelectedIndex(-1)

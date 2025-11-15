@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute, Outlet } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
@@ -19,12 +19,45 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Dive Intel - Find the Right Wetsuit',
+        title: 'Dive Intel - Scuba Diving Temperature Data & Wetsuit Recommendations',
       },
       {
         name: 'description',
         content:
-          'Get wetsuit and drysuit recommendations based on real ocean temperatures worldwide.',
+          'Plan your scuba diving trips with accurate ocean temperature data and wetsuit recommendations for dive sites worldwide. Get historical trends and forecasts for perfect dive planning.',
+      },
+      {
+        name: 'keywords',
+        content:
+          'scuba diving, ocean temperature, wetsuit recommendations, dive planning, sea temperature, dive sites, scuba gear, diving trip planner, water temperature forecast, diving suit guide',
+      },
+      // Open Graph tags
+      {
+        property: 'og:title',
+        content: 'Dive Intel - Scuba Diving Temperature Data & Wetsuit Recommendations',
+      },
+      {
+        property: 'og:description',
+        content:
+          'Get accurate ocean temperature data and wetsuit recommendations for any dive location worldwide. Plan your perfect scuba diving trip.',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      // Twitter Card tags
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'twitter:title',
+        content: 'Dive Intel - Scuba Diving Temperature Data',
+      },
+      {
+        name: 'twitter:description',
+        content:
+          'Get accurate ocean temperature data and wetsuit recommendations for dive sites worldwide.',
       },
     ],
     links: [

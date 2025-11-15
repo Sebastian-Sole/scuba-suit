@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/store'
+import { Route as MapRouteImport } from './routes/map'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiGeocodeRouteImport } from './routes/api/geocode'
@@ -19,6 +20,11 @@ import { Route as ApiSstGridRouteImport } from './routes/api/sst/grid'
 const StoreRoute = StoreRouteImport.update({
   id: '/store',
   path: '/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -50,6 +56,7 @@ const ApiSstGridRoute = ApiSstGridRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/map': typeof MapRoute
   '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/map': typeof MapRoute
   '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/map': typeof MapRoute
   '/store': typeof StoreRoute
   '/api/geocode': typeof ApiGeocodeRoute
   '/api/sst/grid': typeof ApiSstGridRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/map'
     | '/store'
     | '/api/geocode'
     | '/api/sst/grid'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/map'
     | '/store'
     | '/api/geocode'
     | '/api/sst/grid'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/map'
     | '/store'
     | '/api/geocode'
     | '/api/sst/grid'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  MapRoute: typeof MapRoute
   StoreRoute: typeof StoreRoute
   ApiGeocodeRoute: typeof ApiGeocodeRoute
   ApiSstGridRoute: typeof ApiSstGridRoute
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/store'
       fullPath: '/store'
       preLoaderRoute: typeof StoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  MapRoute: MapRoute,
   StoreRoute: StoreRoute,
   ApiGeocodeRoute: ApiGeocodeRoute,
   ApiSstGridRoute: ApiSstGridRoute,

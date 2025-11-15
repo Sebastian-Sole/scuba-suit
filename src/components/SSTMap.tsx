@@ -207,6 +207,7 @@ export const SSTMap = memo(function SSTMap({
   // Update marker position when selectedLocation changes
   useEffect(() => {
     if (!marker.current || !map.current) return
+    if (!isMapLoaded) return // Wait for map to be fully loaded
 
     if (selectedLocation) {
       const element = marker.current.getElement()
@@ -242,7 +243,7 @@ export const SSTMap = memo(function SSTMap({
         element.style.opacity = '0'
       })
     }
-  }, [selectedLocation, selectedCoords])
+  }, [selectedLocation, selectedCoords, isMapLoaded])
 
   // Update cursor style based on selection mode
   useEffect(() => {

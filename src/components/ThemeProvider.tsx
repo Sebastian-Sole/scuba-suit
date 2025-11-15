@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 type Theme = 'dark' | 'light' | 'system'
 
@@ -31,7 +31,8 @@ export function ThemeProvider({
     if (typeof window === 'undefined') {
       return defaultTheme
     }
-    return (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    const storedTheme = localStorage.getItem(storageKey) as Theme | null
+    return storedTheme ?? defaultTheme
   })
 
   useEffect(() => {
@@ -52,15 +53,17 @@ export function ThemeProvider({
     root.classList.add(theme)
   }, [theme])
 
-  const value = {
+  const handleSetTheme = useCallback((newTheme: Theme) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(storageKey, newTheme)
+    }
+    setTheme(newTheme)
+  }, [storageKey])
+
+  const value = useMemo(() => ({
     theme,
-    setTheme: (theme: Theme) => {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(storageKey, theme)
-      }
-      setTheme(theme)
-    },
-  }
+    setTheme: handleSetTheme,
+  }), [theme, handleSetTheme])
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
@@ -71,9 +74,6 @@ export function ThemeProvider({
 
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error('useTheme must be used within a ThemeProvider')
 
   return context
 }
