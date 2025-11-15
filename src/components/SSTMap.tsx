@@ -236,12 +236,18 @@ export const SSTMap = memo(function SSTMap({
           essential: true
         })
       }
+
+      // Update selectedCoords to reflect the current location
+      // This ensures MapHelpMenu displays the correct coordinates
+      setSelectedCoords({ lat: selectedLocation.lat, lon: selectedLocation.lon })
     } else {
       // Hide marker when selection is cleared
       const element = marker.current.getElement()
       requestAnimationFrame(() => {
         element.style.opacity = '0'
       })
+      // Clear selected coordinates
+      setSelectedCoords(null)
     }
   }, [selectedLocation, selectedCoords, isMapLoaded])
 
