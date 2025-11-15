@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Menu } from 'lucide-react'
 import { StoreSidebar } from '@/components/StoreSidebar'
 import { ProductGrid } from '@/components/ProductGrid'
@@ -7,15 +7,36 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { products, priceRanges } from '@/lib/products'
 
+interface StoreSearch {
+  category?: string
+  priceRange?: string
+  brand?: string
+}
+
 export const Route = createFileRoute('/store')({
   component: StorePage,
+  validateSearch: (search: Record<string, unknown>): StoreSearch => {
+    return {
+      category: typeof search.category === 'string' ? search.category : undefined,
+      priceRange: typeof search.priceRange === 'string' ? search.priceRange : undefined,
+      brand: typeof search.brand === 'string' ? search.brand : undefined,
+    }
+  },
 })
 
 function StorePage() {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(null)
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null)
+  const { category, priceRange, brand } = Route.useSearch()
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(category || null)
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(priceRange || null)
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(brand || null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+
+  // Update state when URL search params change
+  useEffect(() => {
+    if (category) setSelectedCategory(category)
+    if (priceRange) setSelectedPriceRange(priceRange)
+    if (brand) setSelectedBrand(brand)
+  }, [category, priceRange, brand])
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {

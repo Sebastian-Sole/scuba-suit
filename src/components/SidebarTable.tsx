@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { SUIT_LABELS, suitForTemp } from '@/lib/suit'
 
 export interface SidebarRow {
@@ -199,6 +200,13 @@ export function SidebarTable({
                   Based on average temperature over historical and forecast data.
                   Consider bringing backup options for temperature extremes.
                 </div>
+                <Link
+                  to="/store"
+                  search={{ category: 'Wetsuits' }}
+                  className="mt-4 inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                >
+                  Shop for Suits
+                </Link>
               </div>
             </div>
           </div>
