@@ -141,23 +141,23 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
           aria-autocomplete="list"
           aria-controls="search-results"
           aria-expanded={showResults && results.length > 0}
-          className="flex-1 px-4 py-2 text-base rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
+          className="w-full sm:flex-1 px-4 py-2 text-base rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]"
         />
-        <div className="flex gap-2">
-          {selectedDateTime && onDateTimeChange && (
+        {selectedDateTime && onDateTimeChange && (
+          <div className="flex gap-2">
             <DateTimePicker
               value={selectedDateTime}
               onChange={onDateTimeChange}
             />
-          )}
-          <button
-            type="submit"
-            disabled={isSearching || !query.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px]"
-          >
-            {isSearching ? 'Searching...' : 'Search'}
-          </button>
-        </div>
+          </div>
+        )}
+        <button
+          type="submit"
+          disabled={isSearching || !query.trim()}
+          className="w-full sm:w-auto px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] min-w-[44px]"
+        >
+          {isSearching ? 'Searching...' : 'Search'}
+        </button>
       </form>
 
       {/* Results dropdown */}

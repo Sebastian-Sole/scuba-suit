@@ -78,13 +78,13 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
   }, [selectedDate, onChange])
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 w-full">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             id="date-picker"
-            className="justify-between font-normal min-h-[44px] px-4"
+            className="flex-1 justify-between font-normal min-h-[44px] px-4"
           >
             {selectedDate ? selectedDate.toLocaleDateString() : 'Select date'}
             <ChevronDownIcon className="ml-2 h-4 w-4" />
@@ -110,7 +110,7 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
         value={selectedTime}
         onChange={handleTimeChange}
         placeholder="12:00"
-        className="bg-background min-h-[44px] w-32 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+        className="bg-background min-h-[44px] flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
       />
     </div>
   )
