@@ -36,12 +36,12 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex min-h-16 items-center gap-4 py-3 px-4 md:px-8">
+      <div className="container flex min-h-12 md:min-h-16 items-center gap-2 md:gap-4 py-2 md:py-3 px-3 md:px-8">
         {/* Mobile Menu - Always on the right on mobile */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden ml-auto order-last">
-            <Button variant="ghost" size="icon" aria-label="Open menu">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Open menu">
+              <Menu className="h-4 w-4" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 overflow-y-auto">
@@ -89,7 +89,7 @@ export default function Navbar() {
         </Sheet>
 
         {/* Brand Name */}
-        <Link to="/" className="font-bold text-xl shrink-0">
+        <Link to="/" className="font-bold text-lg md:text-xl shrink-0">
           Dive Intel
         </Link>
 

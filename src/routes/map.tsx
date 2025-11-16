@@ -173,7 +173,12 @@ function MapPage() {
   }, [setNavbarContent, searchBarElement])
 
   return (
-    <div className="h-full w-full flex">
+    <div className="h-full w-full flex flex-col">
+      {/* Mobile search bar - shown below navbar on mobile only */}
+      <div className="md:hidden border-b bg-background p-2 [&_input]:min-h-[36px] [&_input]:py-1 [&_input]:px-3 [&_input]:text-sm [&_button]:min-h-[36px] [&_button]:py-1 [&_button]:px-3 [&_button]:text-sm [&_form]:gap-1.5">
+        {searchBarElement}
+      </div>
+
       {/* Map and sidebar */}
       <div className="flex-1 flex overflow-hidden">
         {/* Map */}

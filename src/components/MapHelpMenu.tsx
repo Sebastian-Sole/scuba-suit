@@ -23,26 +23,26 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
             setIsMinimized(false)
           }
         }}
-        className="bg-background/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border hover:bg-background transition-all flex items-center gap-2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="bg-background/95 backdrop-blur-sm px-2 py-1.5 md:px-3 md:py-2 rounded-lg shadow-lg border hover:bg-background transition-all flex items-center gap-1.5 md:gap-2 text-muted-foreground hover:text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         aria-label="Show map help menu"
         aria-expanded="false"
       >
-        <Info className="w-4 h-4" aria-hidden="true" />
-        <ChevronUp className="w-4 h-4" aria-hidden="true" />
+        <Info className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
+        <ChevronUp className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
       </button>
     )
   }
 
   return (
     <div
-      className="bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border overflow-hidden min-w-[240px]"
+      className="bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border overflow-hidden min-w-[200px] md:min-w-[240px]"
       role="region"
       aria-label="Map interaction guide"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
-        <div className="flex items-center gap-2 font-medium text-sm">
-          <Info className="w-4 h-4" aria-hidden="true" />
+      <div className="flex items-center justify-between px-2 py-1.5 md:px-3 md:py-2 border-b bg-muted/50">
+        <div className="flex items-center gap-1.5 md:gap-2 font-medium text-xs md:text-sm">
+          <Info className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
           <span>Map Guide</span>
         </div>
         <button
@@ -53,28 +53,28 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
               setIsMinimized(true)
             }
           }}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+          className="text-muted-foreground hover:text-foreground transition-colors p-0.5 md:p-1 rounded hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
           aria-label="Minimize map help menu"
           aria-expanded="true"
         >
-          <ChevronDown className="w-4 h-4" aria-hidden="true" />
+          <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-3 space-y-3 text-xs">
+      <div className="p-2 md:p-3 space-y-2 md:space-y-3 text-xs">
         {/* Select Location Button */}
         <div>
           <button
             onClick={onToggleSelectionMode}
-            className={`w-full px-3 py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 ${
+            className={`w-full px-2 py-1.5 md:px-3 md:py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-1.5 md:gap-2 text-xs md:text-sm ${
               isSelectionMode
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
             aria-pressed={isSelectionMode}
           >
-            <MapPin className="w-4 h-4" aria-hidden="true" />
+            <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
             {isSelectionMode ? 'Click map to select' : 'Select Location'}
           </button>
         </div>
@@ -95,8 +95,8 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
           </div>
         </div>
 
-        {/* Keyboard Shortcuts (placeholder) */}
-        <div className="opacity-50">
+        {/* Keyboard Shortcuts (placeholder) - hidden on mobile */}
+        <div className="opacity-50 hidden md:block">
           <div className="text-muted-foreground uppercase tracking-wide font-semibold mb-1">
             Keyboard Shortcuts
           </div>
