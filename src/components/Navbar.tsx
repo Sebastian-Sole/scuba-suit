@@ -100,16 +100,15 @@ export default function Navbar() {
             <NavigationMenuList>
               {navItems.map(({ to, label }) => (
                 <NavigationMenuItem key={to}>
-                  <Link to={to}>
-                    {({ isActive }) => (
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                        active={isActive}
-                      >
-                        {label}
-                      </NavigationMenuLink>
-                    )}
-                  </Link>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      to={to}
+                      className={navigationMenuTriggerStyle()}
+                      activeProps={{ 'data-active': 'true' }}
+                    >
+                      {label}
+                    </Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
             </NavigationMenuList>

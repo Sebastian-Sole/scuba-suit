@@ -249,7 +249,7 @@ export const SSTMap = memo(function SSTMap({
       // Clear selected coordinates
       setSelectedCoords(null)
     }
-  }, [selectedLocation, selectedCoords, isMapLoaded])
+  }, [selectedLocation, isMapLoaded])
 
   // Update cursor style based on selection mode
   useEffect(() => {
