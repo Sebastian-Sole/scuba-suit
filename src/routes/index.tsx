@@ -58,13 +58,15 @@ function LandingPage() {
     setSelectedLocation({ lat, lon, display })
   }, [])
 
-  const handleSearch = useCallback(() => {
-    if (!selectedLocation) return
+  const handleSearch = useCallback((location?: { lat: number; lon: number; display: string }) => {
+    // Use the passed location or fall back to the stored selectedLocation
+    const locationToUse = location || selectedLocation
+    if (!locationToUse) return
 
     // Navigate to map with location
     navigate({
       to: '/map',
-      search: { lat: selectedLocation.lat, lon: selectedLocation.lon, datetime: selectedDateTime }
+      search: { lat: locationToUse.lat, lon: locationToUse.lon, datetime: selectedDateTime }
     })
   }, [navigate, selectedLocation, selectedDateTime])
 

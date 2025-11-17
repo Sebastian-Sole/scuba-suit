@@ -12,7 +12,7 @@ export interface SearchBarProps {
   selectedDateTime?: string
   onDateTimeChange?: (datetime: string) => void
   displayText?: string
-  onSearch?: () => void // Optional callback when search button is clicked
+  onSearch?: (location?: { lat: number; lon: number; display: string }) => void // Optional callback when search button is clicked
 }
 
 export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDateTime, onDateTimeChange, displayText, onSearch }: SearchBarProps) {
@@ -67,7 +67,7 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
     return () => clearTimeout(timer)
   }, [query, handleSearch, isUserTyping])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // If a result is selected via keyboard, use that
@@ -78,16 +78,46 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
       setResults([])
       setSelectedIndex(-1)
       setIsUserTyping(false)
-      // If onSearch is provided, call it (for landing page to navigate)
+      // If onSearch is provided, call it with the location data
       if (onSearch) {
-        onSearch()
+        onSearch({ lat: result.lat, lon: result.lon, display: result.display })
       }
-    } else if (onSearch) {
-      // If onSearch is provided, call it instead of searching
-      onSearch()
-    } else {
-      // Default behavior: search for locations
-      handleSearch(query)
+    } else if (query.trim()) {
+      // Infer location from query: fetch results and auto-select first match
+      setIsSearching(true)
+      try {
+        const response = await fetch(`/api/geocode?q=${encodeURIComponent(query)}`)
+        if (!response.ok) throw new Error('Search failed')
+
+        const data = await response.json()
+        const locations = data.locations || []
+
+        if (locations.length > 0) {
+          // Auto-select the first/best result
+          const firstResult = locations[0]
+          onSelectLocation(firstResult.lat, firstResult.lon, firstResult.display)
+          setQuery(firstResult.display)
+          setShowResults(false)
+          setResults([])
+          setSelectedIndex(-1)
+          setIsUserTyping(false)
+
+          // If onSearch is provided (landing page), call it with the location data
+          if (onSearch) {
+            onSearch({ lat: firstResult.lat, lon: firstResult.lon, display: firstResult.display })
+          }
+        } else {
+          // No results found
+          setResults([])
+          setShowResults(false)
+        }
+      } catch (err) {
+        console.error('Search error:', err)
+        setResults([])
+        setShowResults(false)
+      } finally {
+        setIsSearching(false)
+      }
     }
   }
 
