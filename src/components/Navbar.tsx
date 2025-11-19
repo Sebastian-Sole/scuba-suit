@@ -36,10 +36,10 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex min-h-12 md:min-h-16 items-center gap-2 md:gap-4 py-2 md:py-3 px-3 md:px-8">
-        {/* Mobile Menu - Always on the right on mobile */}
+      <div className="container max-w-none flex h-16 items-center gap-2 md:gap-4 px-3 md:px-8">
+        {/* Mobile Menu - Show on <md normally, but on map page show on <lg */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden ml-auto order-last">
+          <SheetTrigger asChild className={showNavbarContent ? "lg:hidden ml-auto order-last" : "md:hidden ml-auto order-last"}>
             <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Open menu">
               <Menu className="h-4 w-4" />
             </Button>
@@ -56,11 +56,6 @@ export default function Navbar() {
                 </Link>
               </SheetTitle>
             </SheetHeader>
-
-            {/* Mobile search bar - only on map route */}
-            {showNavbarContent && navbarContent && (
-              <div className="mt-6 pb-4 border-b">{navbarContent}</div>
-            )}
 
             <nav className="flex flex-col gap-4 mt-6">
               {navItems.map(({ to, label, icon: Icon }) => (
@@ -93,37 +88,65 @@ export default function Navbar() {
           Dive Intel
         </Link>
 
-        {/* Desktop Navigation - Full width layout */}
-        <div className="hidden md:flex md:flex-1 md:items-center md:justify-between">
-          {/* Left: Nav Links */}
-          <NavigationMenu className="ml-6">
-            <NavigationMenuList>
-              {navItems.map(({ to, label }) => (
-                <NavigationMenuItem key={to}>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to={to}
-                      className={navigationMenuTriggerStyle()}
-                      activeProps={{ 'data-active': 'true' }}
-                    >
-                      {label}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+        {/* Desktop Navigation - Different layouts for map vs other pages */}
+        {showNavbarContent ? (
+          // Map page: Show inputs at md+, nav links at lg+ only
+          <>
+            {/* Nav Links - only show at lg+ on map page */}
+            <NavigationMenu className="hidden lg:flex ml-6">
+              <NavigationMenuList>
+                {navItems.map(({ to, label }) => (
+                  <NavigationMenuItem key={to}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to={to}
+                        className={navigationMenuTriggerStyle()}
+                        activeProps={{ 'data-active': 'true' }}
+                      >
+                        {label}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
 
-          {/* Center: SearchBar - only on map route */}
-          {showNavbarContent && navbarContent && (
-            <div className="flex-1 max-w-2xl mx-6">{navbarContent}</div>
-          )}
+            {/* SearchBar - show at sm+ (640px and above) */}
+            <div className="hidden sm:flex sm:flex-1 sm:mx-4 md:mx-6">{navbarContent}</div>
 
-          {/* Right: Theme Toggle */}
-          <div className="ml-auto">
-            <ThemeToggle />
+            {/* Theme Toggle */}
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
+          </>
+        ) : (
+          // Other pages: Normal layout at md+
+          <div className="hidden md:flex md:flex-1 md:items-center md:justify-between">
+            {/* Left: Nav Links */}
+            <NavigationMenu className="ml-6">
+              <NavigationMenuList>
+                {navItems.map(({ to, label }) => (
+                  <NavigationMenuItem key={to}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        to={to}
+                        className={navigationMenuTriggerStyle()}
+                        activeProps={{ 'data-active': 'true' }}
+                      >
+                        {label}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            {/* Right: Theme Toggle */}
+            <div className="ml-auto">
+              <ThemeToggle />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </header>
   )

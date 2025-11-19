@@ -83,7 +83,7 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
           <Button
             variant="outline"
             id="date-picker"
-            className="flex-1 justify-between font-normal min-h-[44px] px-4"
+            className="flex-1 justify-between font-normal text-sm md:text-base min-h-[44px] md:min-h-[40px] px-3 md:px-4"
           >
             {selectedDate ? selectedDate.toLocaleDateString() : 'Select date'}
             <ChevronDownIcon className="ml-2 h-4 w-4" />
@@ -109,7 +109,7 @@ export function DateTimePicker({ value, onChange }: DateTimePickerProps) {
         value={selectedTime}
         onChange={handleTimeChange}
         placeholder="12:00"
-        className="bg-background min-h-[44px] flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+        className="bg-background text-sm md:text-base min-h-[44px] md:min-h-[40px] flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
       />
     </div>
   )
