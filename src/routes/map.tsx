@@ -45,8 +45,6 @@ function MapPage() {
     const today = getTodayISO()
     return `${today}T12:00:00`
   })
-  // const [points, setPoints] = useState<MapPoint[]>([]) // Disabled for now - no heatmap
-  // const [isLoadingGrid, setIsLoadingGrid] = useState(false) // Disabled for now - no heatmap
   const [selectedPoint, setSelectedPoint] = useState<PointData | null>(null)
   const [isLoadingPoint, setIsLoadingPoint] = useState(false)
   const [pointError, setPointError] = useState<string | null>(null)
@@ -66,8 +64,6 @@ function MapPage() {
     if (selectedLocation.display) return selectedLocation.display
     return `${selectedLocation.lat.toFixed(4)}, ${selectedLocation.lon.toFixed(4)}`
   }, [selectedLocation])
-  // Grid data fetching disabled for now - no heatmap
-  // const debounceTimer = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch point data when map is clicked
   const handleMapClick = useCallback(
@@ -89,7 +85,7 @@ function MapPage() {
       const [date, timeWithSeconds] = selectedDateTime.split('T')
       const time = timeWithSeconds ? timeWithSeconds.substring(0, 5) : '12:00' // HH:mm
 
-      const url = `/api/sst/point?lat=${lat}&lon=${lon}&date=${date}&time=${time}&years=7&forecastDays=7`
+      const url = `/api/sst/point?lat=${lat}&lon=${lon}&date=${date}&time=${time}&years=3&forecastDays=2`
 
       try {
         const response = await fetch(url)
@@ -184,8 +180,6 @@ function MapPage() {
         {/* Map */}
         <div className="flex-1 relative">
           <SSTMap
-            points={[]}
-            selectedDate={selectedDateTime.split('T')[0]} // Pass just the date part for map display
             onMapClick={handleMapClick}
             initialCenter={initialCenter}
             isLoading={isLoadingPoint}
@@ -231,9 +225,7 @@ function MapPage() {
               onClose={() => {
                 setSelectedPoint(null)
                 setPointError(null)
-                setSelectedLocation(null)
-                // Clear URL params
-                void navigate({ search: {} as any })
+                // Keep selectedLocation and URL params to maintain marker
               }}
             />
           )

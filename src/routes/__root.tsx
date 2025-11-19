@@ -89,8 +89,14 @@ function RootComponent() {
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          key="theme-script"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{const stored=localStorage.getItem('dive-intel-theme');const validThemes=['light','dark','system'];const theme=validThemes.includes(stored)?stored:'system';const root=document.documentElement;if(theme==='system'){root.className=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}else{root.className=theme;}}catch(e){}})();`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>

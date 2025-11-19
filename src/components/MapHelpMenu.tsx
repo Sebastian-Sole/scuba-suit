@@ -10,7 +10,12 @@ export interface MapHelpMenuProps {
   onToggleSelectionMode: () => void
 }
 
-export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading, isSelectionMode, onToggleSelectionMode }: MapHelpMenuProps) {
+export const MapHelpMenu = memo(function MapHelpMenu({
+  selectedCoords,
+  isLoading,
+  isSelectionMode,
+  onToggleSelectionMode,
+}: MapHelpMenuProps) {
   const [isMinimized, setIsMinimized] = useState(false)
 
   if (isMinimized) {
@@ -57,7 +62,10 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
           aria-label="Minimize map help menu"
           aria-expanded="true"
         >
-          <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
+          <ChevronDown
+            className="w-3.5 h-3.5 md:w-4 md:h-4"
+            aria-hidden="true"
+          />
         </button>
       </div>
 
@@ -84,11 +92,7 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
           <div className="text-muted-foreground uppercase tracking-wide font-semibold mb-1">
             Selected Location
           </div>
-          <div
-            className="font-mono"
-            aria-live="polite"
-            aria-atomic="true"
-          >
+          <div className="font-mono" aria-live="polite" aria-atomic="true">
             {selectedCoords
               ? `${selectedCoords.lat.toFixed(4)}, ${selectedCoords.lon.toFixed(4)}`
               : '—'}
@@ -100,9 +104,7 @@ export const MapHelpMenu = memo(function MapHelpMenu({ selectedCoords, isLoading
           <div className="text-muted-foreground uppercase tracking-wide font-semibold mb-1">
             Keyboard Shortcuts
           </div>
-          <div className="text-muted-foreground italic">
-            Coming soon
-          </div>
+          <div className="text-muted-foreground italic">Coming soon</div>
         </div>
 
         {/* Loading indicator */}

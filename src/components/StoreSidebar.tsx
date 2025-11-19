@@ -1,4 +1,3 @@
-import { Waves } from 'lucide-react'
 import { categories, priceRanges, brands } from '@/lib/products'
 import { cn } from '@/lib/utils'
 

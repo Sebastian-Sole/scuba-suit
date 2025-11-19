@@ -15,8 +15,8 @@ const pointQuerySchema = z.object({
   lon: z.string().regex(/^-?\d+\.?\d*$/),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().regex(/^\d{2}:\d{2}$/).optional(), // HH:mm format
-  years: z.string().optional().default('7'),
-  forecastDays: z.string().optional().default('7'),
+  years: z.string().optional().default('3'),
+  forecastDays: z.string().optional().default('2'),
 })
 
 export const Route = createFileRoute('/api/sst/point')({
@@ -58,6 +58,7 @@ export const Route = createFileRoute('/api/sst/point')({
         }
 
         try {
+          // Historical: 3 years × 3 dates (±1 day)
           const historicalDates = getHistoricalDates(date, years)
           const historicalTemps = await Promise.all(
             historicalDates.map((d) => fetchSSTDayAvg(lat, lon, d, hour)),
@@ -70,14 +71,26 @@ export const Route = createFileRoute('/api/sst/point')({
             kind: 'historical' as const,
           }))
 
-          const selectedTemp = await fetchSSTWithNudge(lat, lon, date, 3, hour)
-          const selectedRow = {
-            date,
-            tempC: selectedTemp,
-            suit: selectedTemp !== null ? suitForTemp(selectedTemp) : null,
-            kind: 'selected' as const,
+          // Replace year blocks with no data with a single "No data" row
+          const filteredHistoricalRows: typeof historicalRows = []
+          for (let i = 0; i < historicalRows.length; i += 3) {
+            const yearBlock = historicalRows.slice(i, i + 3)
+            const hasData = yearBlock.some(row => row.tempC !== null)
+            if (hasData) {
+              filteredHistoricalRows.push(...yearBlock)
+            } else {
+              // Add a single "No data" row for this year
+              const yearDate = yearBlock[0].date
+              filteredHistoricalRows.push({
+                date: yearDate,
+                tempC: null,
+                suit: null,
+                kind: 'no-data' as const,
+              })
+            }
           }
 
+          // Forecast: selected date ±2 days (5 dates including selected)
           const forecastDates = getForecastDates(date, forecastDays)
           const forecastTemps = await Promise.all(
             forecastDates.map((d) => fetchSSTDayAvg(lat, lon, d, hour)),
@@ -87,12 +100,12 @@ export const Route = createFileRoute('/api/sst/point')({
             date: d,
             tempC: forecastTemps[i],
             suit: forecastTemps[i] !== null ? suitForTemp(forecastTemps[i]) : null,
-            kind: 'forecast' as const,
+            kind: (d === date ? 'selected' : 'forecast') as const,
           }))
 
+          // Combine: historical first, then forecast range
           const rows = [
-            ...historicalRows.reverse(),
-            selectedRow,
+            ...filteredHistoricalRows,
             ...forecastRows,
           ]
 

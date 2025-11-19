@@ -19,23 +19,38 @@ export function getTodayISO(): string {
 }
 
 /**
- * Generate array of historical same-day dates for previous N years
+ * Generate array of historical dates for previous N years with ±1 day variance
+ * Returns dates in chronological order (oldest to newest)
  */
 export function getHistoricalDates(dateISO: string, years: number): Array<string> {
-  const year = Number(dateISO.slice(0, 4))
-  const monthDay = dateISO.slice(5) // MM-DD
+  const dates: string[] = []
 
-  return Array.from({ length: years }, (_, i) => {
-    const historicalYear = year - (i + 1)
-    return `${historicalYear}-${monthDay}`
-  })
+  // Loop from oldest to newest year
+  for (let yearOffset = years; yearOffset >= 1; yearOffset--) {
+    // For each year, generate date ±1 day in chronological order
+    for (let dayOffset = -1; dayOffset <= 1; dayOffset++) {
+      const historicalDate = addDays(dateISO, dayOffset)
+      const year = Number(historicalDate.slice(0, 4))
+      const monthDay = historicalDate.slice(5) // MM-DD
+      const historicalYear = year - yearOffset
+      dates.push(`${historicalYear}-${monthDay}`)
+    }
+  }
+
+  return dates
 }
 
 /**
- * Generate array of future dates for forecast
+ * Generate array of dates around selected date (±daysRange)
  */
-export function getForecastDates(dateISO: string, days: number): Array<string> {
-  return Array.from({ length: days }, (_, i) => addDays(dateISO, i + 1))
+export function getForecastDates(dateISO: string, daysRange: number): Array<string> {
+  const dates: string[] = []
+
+  for (let dayOffset = -daysRange; dayOffset <= daysRange; dayOffset++) {
+    dates.push(addDays(dateISO, dayOffset))
+  }
+
+  return dates
 }
 
 /**

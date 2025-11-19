@@ -8,21 +8,7 @@ import { renderToString } from 'react-dom/server'
 import { MapHelpMenu } from './MapHelpMenu'
 import type { Map as MapLibreMap } from 'maplibre-gl'
 
-export interface MapPoint {
-  lat: number
-  lon: number
-  temp: number | null
-}
-
 export interface SSTMapProps {
-  points: Array<MapPoint>
-  selectedDate: string
-  onMapMove?: (bounds: {
-    minLon: number
-    minLat: number
-    maxLon: number
-    maxLat: number
-  }) => void
   onMapClick?: (lat: number, lon: number) => void
   initialCenter?: [number, number] // [lon, lat]
   initialZoom?: number
@@ -31,9 +17,6 @@ export interface SSTMapProps {
 }
 
 export const SSTMap = memo(function SSTMap({
-  points,
-  selectedDate,
-  onMapMove,
   onMapClick,
   initialCenter = [5, 55], // North Sea default
   initialZoom = 4,
@@ -66,7 +49,6 @@ export const SSTMap = memo(function SSTMap({
 
     // Mark map as loaded
     map.current.on('load', () => {
-      console.log('Map loaded successfully')
       setIsMapLoaded(true)
     })
 
@@ -75,33 +57,12 @@ export const SSTMap = memo(function SSTMap({
       console.error('Map error:', e)
     })
 
-    console.log('Map initialized', { center: initialCenter, zoom: initialZoom })
-
     // Cleanup
     return () => {
       map.current?.remove()
       map.current = null
     }
   }, []) // Only run once on mount
-
-  // Handle map movement - disabled for now (no heatmap)
-  // useEffect(() => {
-  //   if (!map.current || !onMapMove) return
-  //   const handleMoveEnd = () => {
-  //     if (!map.current) return
-  //     const bounds = map.current.getBounds()
-  //     onMapMove({
-  //       minLon: bounds.getWest(),
-  //       minLat: bounds.getSouth(),
-  //       maxLon: bounds.getEast(),
-  //       maxLat: bounds.getNorth(),
-  //     })
-  //   }
-  //   map.current.on('moveend', handleMoveEnd)
-  //   return () => {
-  //     map.current?.off('moveend', handleMoveEnd)
-  //   }
-  // }, [onMapMove])
 
   // Handle map clicks in selection mode
   useEffect(() => {
@@ -288,9 +249,6 @@ export const SSTMap = memo(function SSTMap({
   const handleToggleSelectionMode = useCallback(() => {
     setIsSelectionMode((prev) => !prev)
   }, [])
-
-  // Heatmap disabled for now - focus on basic map interaction
-  // TODO: Re-enable heatmap visualization later
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
