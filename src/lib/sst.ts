@@ -33,11 +33,17 @@ export async function fetchSSTDayAvg(
   })
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s timeout per request
+
     const r = await fetch(`${MARINE_API_BASE}?${qs}`, {
       headers: {
         'User-Agent': 'ScubaSuitRecommender/1.0',
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!r.ok) {
       console.warn(`Open-Meteo error for ${lat},${lon} on ${dateISO}: ${r.status}`)
@@ -64,7 +70,11 @@ export async function fetchSSTDayAvg(
     // Return daily average
     return validTemps.reduce((a, b) => a + b, 0) / validTemps.length
   } catch (err) {
-    console.error(`Failed to fetch SST for ${lat},${lon}:`, err)
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.warn(`SST request timeout for ${lat},${lon} on ${dateISO}`)
+    } else {
+      console.error(`Failed to fetch SST for ${lat},${lon}:`, err)
+    }
     return null
   }
 }
@@ -90,11 +100,17 @@ export async function fetchSSTGrid(
   })
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout for grid (larger request)
+
     const r = await fetch(`${MARINE_API_BASE}?${qs}`, {
       headers: {
         'User-Agent': 'ScubaSuitRecommender/1.0',
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
 
     if (!r.ok) {
       console.warn(`Open-Meteo grid error: ${r.status}`)
@@ -123,7 +139,11 @@ export async function fetchSSTGrid(
       }
     })
   } catch (err) {
-    console.error('Failed to fetch SST grid:', err)
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.warn('SST grid request timeout')
+    } else {
+      console.error('Failed to fetch SST grid:', err)
+    }
     return coords.map((c) => ({ ...c, temp: null }))
   }
 }
