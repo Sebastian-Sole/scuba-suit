@@ -2,11 +2,36 @@ Welcome to your new TanStack app!
 
 # Getting Started
 
+## Environment Setup
+
+This application requires a Geoapify API key for geocoding functionality.
+
+1. Sign up for a free account at [Geoapify](https://www.geoapify.com/)
+2. Get your API key from the dashboard
+3. Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+4. Add your API key to the `.env` file:
+
+```
+GEOAPIFY_API_KEY=your_api_key_here
+```
+
+**Free tier limits:**
+- 3,000 requests per day
+- 90,000 requests per month
+- 5 requests per second
+
+## Running the Application
+
 To run this application:
 
 ```bash
 pnpm install
-pnpm start
+pnpm dev
 ```
 
 # Building For Production

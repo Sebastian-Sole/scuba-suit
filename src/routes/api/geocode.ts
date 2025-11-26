@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { json } from '@tanstack/react-start'
 import { z } from 'zod'
 import { cache } from '@/lib/cache'
+import { env } from '@/env'
 
 const geocodeQuerySchema = z.object({
   q: z.string().min(1),
@@ -35,43 +36,66 @@ export const Route = createFileRoute('/api/geocode')({
         }
 
         try {
-          const nominatimUrl = new URL('https://nominatim.openstreetmap.org/search')
-          nominatimUrl.searchParams.set('q', q)
-          nominatimUrl.searchParams.set('format', 'json')
-          nominatimUrl.searchParams.set('limit', '5')
+          const geoapifyUrl = new URL('https://api.geoapify.com/v1/geocode/search')
+          geoapifyUrl.searchParams.set('text', q)
+          geoapifyUrl.searchParams.set('apiKey', env.GEOAPIFY_API_KEY)
+          geoapifyUrl.searchParams.set('limit', '5')
+          geoapifyUrl.searchParams.set('format', 'json')
 
-          const response = await fetch(nominatimUrl.toString(), {
-            headers: {
-              'User-Agent': 'ScubaSuitRecommender/1.0 (contact@example.com)',
-            },
-          })
+          // Add timeout to prevent hanging requests
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 8000) // 8s timeout
 
-          if (!response.ok) {
-            return json(
-              { error: 'Geocoding service unavailable' },
-              { status: 502 },
-            )
+          try {
+            const response = await fetch(geoapifyUrl.toString(), {
+              signal: controller.signal,
+            })
+
+            clearTimeout(timeoutId)
+
+            if (!response.ok) {
+              console.error(`Geoapify returned ${response.status}: ${response.statusText}`)
+              return json(
+                { error: 'Geocoding service unavailable' },
+                { status: 502 },
+              )
+            }
+
+            const data = await response.json()
+            const results = data.results || []
+
+            const locations = results.map((r: any) => ({
+              lat: r.lat,
+              lon: r.lon,
+              display: r.formatted,
+            }))
+
+            const payload = { locations }
+
+            cache.set(cacheKey, payload, 86400)
+
+            return json(payload, {
+              headers: {
+                'Cache-Control': 'public, max-age=86400',
+              },
+            })
+          } catch (fetchErr) {
+            clearTimeout(timeoutId)
+
+            if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+              console.error(`Geocoding timeout for query: ${q}`)
+              return json(
+                { error: 'Geocoding request timed out' },
+                { status: 504 },
+              )
+            }
+            throw fetchErr
           }
-
-          const results = await response.json()
-
-          const locations = results.map((r: any) => ({
-            lat: parseFloat(r.lat),
-            lon: parseFloat(r.lon),
-            display: r.display_name,
-          }))
-
-          const payload = { locations }
-
-          cache.set(cacheKey, payload, 86400)
-
-          return json(payload, {
-            headers: {
-              'Cache-Control': 'public, max-age=86400',
-            },
-          })
         } catch (err) {
-          console.error('Geocoding error:', err)
+          console.error('Geocoding error:', err instanceof Error ? err.message : String(err), {
+            query: q,
+            error: err,
+          })
           return json(
             { error: 'Failed to geocode location' },
             { status: 502 },

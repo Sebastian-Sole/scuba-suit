@@ -81,6 +81,17 @@ function RootComponent() {
           <main className="flex-1 overflow-auto">
             <Outlet />
           </main>
+          <footer className="border-t px-4 py-2 text-xs text-muted-foreground text-center">
+            Geocoding by{' '}
+            <a
+              href="https://www.geoapify.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-foreground transition-colors"
+            >
+              Geoapify
+            </a>
+          </footer>
         </div>
       </NavbarProvider>
     </ThemeProvider>
