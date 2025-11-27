@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
+import { MapPin } from 'lucide-react'
 import type { SidebarRow } from '@/components/SidebarTable'
 import { ErrorState } from '@/components/ErrorState'
 import { LoadingSkeleton } from '@/components/LoadingSkeleton'
@@ -49,6 +50,8 @@ function MapPage() {
   const [isLoadingPoint, setIsLoadingPoint] = useState(false)
   const [pointError, setPointError] = useState<string | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; display?: string } | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
 
   // Memoize initial center to prevent map reinitialization
   const initialCenter = useMemo<[number, number] | undefined>(() => {
@@ -98,6 +101,7 @@ function MapPage() {
         const data = await response.json()
         setSelectedPoint(data)
         setPointError(null)
+        setIsDrawerOpen(true) // Auto-open drawer on success
       } catch (err) {
         console.error('Error fetching point data:', err)
         const errorMessage =
@@ -171,8 +175,21 @@ function MapPage() {
   return (
     <div className="h-full w-full flex flex-col">
       {/* Mobile search bar - shown below navbar on small screens only (under 640px) */}
-      <div className="sm:hidden border-b bg-background p-2 [&_input]:min-h-[36px] [&_input]:py-1 [&_input]:px-3 [&_input]:text-sm [&_button]:min-h-[36px] [&_button]:py-1 [&_button]:px-3 [&_button]:text-sm [&_form]:gap-1.5">
+      <div className="sm:hidden border-b bg-background p-2 space-y-2 [&_input]:min-h-[36px] [&_input]:py-1 [&_input]:px-3 [&_input]:text-sm [&_button]:min-h-[36px] [&_button]:py-1 [&_button]:px-3 [&_button]:text-sm [&_form]:gap-1.5">
         {searchBarElement}
+        {/* Select Location Button */}
+        <button
+          onClick={() => setIsSelectionMode(prev => !prev)}
+          className={`w-full px-3 py-2 rounded-md font-medium transition-colors flex items-center justify-center gap-2 text-sm ${
+            isSelectionMode
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+          }`}
+          aria-pressed={isSelectionMode}
+        >
+          <MapPin className="w-4 h-4" aria-hidden="true" />
+          {isSelectionMode ? 'Click map to select' : 'Select Location'}
+        </button>
       </div>
 
       {/* Map and sidebar */}
@@ -184,6 +201,8 @@ function MapPage() {
             initialCenter={initialCenter}
             isLoading={isLoadingPoint}
             selectedLocation={selectedLocation}
+            isSelectionMode={isSelectionMode}
+            onToggleSelectionMode={() => setIsSelectionMode(prev => !prev)}
           />
           {isLoadingPoint && (
             <div className="absolute top-4 right-4 bg-cyan-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 z-20">
@@ -192,15 +211,26 @@ function MapPage() {
               <span className="sm:hidden">Loading...</span>
             </div>
           )}
+          {/* Button to reopen drawer on mobile */}
+          {!isDrawerOpen && selectedPoint && (
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="md:hidden absolute bottom-4 right-4 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 z-20 hover:bg-primary/90 transition-colors"
+              aria-label="View location details"
+            >
+              <MapPin className="w-4 h-4" aria-hidden="true" />
+              View Details
+            </button>
+          )}
         </div>
 
         {/* Sidebar */}
         {isLoadingPoint && !selectedPoint ? (
-          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none">
+          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[45vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none">
             <LoadingSkeleton />
           </div>
         ) : pointError ? (
-          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none flex items-center justify-center">
+          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[45vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none flex items-center justify-center">
             <ErrorState
               message={pointError}
               onRetry={() => {
@@ -222,7 +252,10 @@ function MapPage() {
               location={selectedPoint.location}
               rows={selectedPoint.rows}
               stats={selectedPoint.stats}
+              open={isDrawerOpen}
+              onOpenChange={setIsDrawerOpen}
               onClose={() => {
+                setIsDrawerOpen(false)
                 setSelectedPoint(null)
                 setPointError(null)
                 // Keep selectedLocation and URL params to maintain marker

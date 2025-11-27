@@ -14,6 +14,8 @@ export interface SSTMapProps {
   initialZoom?: number
   isLoading?: boolean
   selectedLocation?: { lat: number; lon: number } | null
+  isSelectionMode?: boolean
+  onToggleSelectionMode?: () => void
 }
 
 export const SSTMap = memo(function SSTMap({
@@ -22,12 +24,13 @@ export const SSTMap = memo(function SSTMap({
   initialZoom = 4,
   isLoading = false,
   selectedLocation = null,
+  isSelectionMode = false,
+  onToggleSelectionMode,
 }: SSTMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
   const marker = useRef<maplibregl.Marker | null>(null)
-  const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lon: number } | null>(null)
 
   // Initialize map
@@ -82,7 +85,9 @@ export const SSTMap = memo(function SSTMap({
       onMapClick(lat, lon)
 
       // Exit selection mode after selecting
-      setIsSelectionMode(false)
+      if (onToggleSelectionMode) {
+        onToggleSelectionMode()
+      }
 
       // Update marker position - set position immediately, animate styles
       if (marker.current) {
@@ -107,7 +112,7 @@ export const SSTMap = memo(function SSTMap({
     return () => {
       map.current?.off('click', handleClick)
     }
-  }, [onMapClick, isMapLoaded, isSelectionMode])
+  }, [onMapClick, isMapLoaded, isSelectionMode, onToggleSelectionMode])
 
   // Create marker once when map loads
   useEffect(() => {
@@ -245,11 +250,6 @@ export const SSTMap = memo(function SSTMap({
     }
   }, [onMapClick])
 
-  // Memoize the toggle function to prevent unnecessary re-renders
-  const handleToggleSelectionMode = useCallback(() => {
-    setIsSelectionMode((prev) => !prev)
-  }, [])
-
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <div
@@ -285,6 +285,7 @@ export const SSTMap = memo(function SSTMap({
       )}
       {isMapLoaded && (
         <div
+          className="hidden md:block"
           style={{
             position: 'absolute',
             bottom: '1rem',
@@ -296,7 +297,7 @@ export const SSTMap = memo(function SSTMap({
             selectedCoords={selectedCoords}
             isLoading={isLoading}
             isSelectionMode={isSelectionMode}
-            onToggleSelectionMode={handleToggleSelectionMode}
+            onToggleSelectionMode={onToggleSelectionMode || (() => {})}
           />
         </div>
       )}

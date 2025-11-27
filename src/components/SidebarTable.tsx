@@ -1,5 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { SUIT_LABELS, suitForTemp } from '@/lib/suit'
+import {
+  Drawer,
+  DrawerContent,
+} from '@/components/ui/drawer'
 
 export interface SidebarRow {
   date: string
@@ -26,6 +30,8 @@ export interface SidebarTableProps {
     p90: number
   } | null
   onClose: () => void
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function SidebarTable({
@@ -33,75 +39,69 @@ export function SidebarTable({
   rows,
   stats,
   onClose,
+  open = true,
+  onOpenChange,
 }: SidebarTableProps) {
-  return (
+  // Shared content for both mobile drawer and desktop sidebar
+  const content = (
     <>
-      {/* Mobile backdrop overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 z-30 md:hidden"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Sidebar/Drawer */}
-      <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[70vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none border-l">
-        {/* Header */}
-        <div className="sticky top-0 bg-primary text-primary-foreground p-4 z-10">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold mb-1">
-                {location.display || 'Selected Location'}
-              </h2>
-              <p className="text-sm opacity-90">
-                {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="opacity-90 hover:opacity-100 transition-opacity"
-              aria-label="Close sidebar"
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+      {/* Header */}
+      <div className="sticky top-0 bg-primary text-primary-foreground p-4 z-10 md:rounded-none">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold mb-1">
+              {location.display || 'Selected Location'}
+            </h2>
+            <p className="text-sm opacity-90">
+              {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
+            </p>
           </div>
-
-          {/* Statistics */}
-          {stats && (
-            <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-              <div>
-                <div className="opacity-80">Mean</div>
-                <div className="font-semibold">{stats.mean.toFixed(1)}°C</div>
-              </div>
-              <div>
-                <div className="opacity-80">Range</div>
-                <div className="font-semibold">
-                  {stats.min.toFixed(1)}-{stats.max.toFixed(1)}°C
-                </div>
-              </div>
-              <div>
-                <div className="opacity-80">P10-P90</div>
-                <div className="font-semibold">
-                  {stats.p10.toFixed(1)}-{stats.p90.toFixed(1)}°C
-                </div>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={onClose}
+            className="opacity-90 hover:opacity-100 transition-opacity md:inline hidden"
+            aria-label="Close sidebar"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
 
-        {/* Table */}
-        <div className="p-4">
+        {/* Statistics */}
+        {stats && (
+          <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+            <div>
+              <div className="opacity-80">Mean</div>
+              <div className="font-semibold">{stats.mean.toFixed(1)}°C</div>
+            </div>
+            <div>
+              <div className="opacity-80">Range</div>
+              <div className="font-semibold">
+                {stats.min.toFixed(1)}-{stats.max.toFixed(1)}°C
+              </div>
+            </div>
+            <div>
+              <div className="opacity-80">P10-P90</div>
+              <div className="font-semibold">
+                {stats.p10.toFixed(1)}-{stats.p90.toFixed(1)}°C
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="p-4">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b">
@@ -251,6 +251,23 @@ export function SidebarTable({
             </div>
           )}
         </div>
+    </>
+  )
+
+  return (
+    <>
+      {/* Mobile: Drawer */}
+      <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
+        <DrawerContent className="md:hidden max-h-[60vh]">
+          <div className="overflow-y-auto max-h-[60vh]">
+            {content}
+          </div>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Desktop: Fixed Sidebar */}
+      <div className="hidden md:block md:w-96 h-full bg-background shadow-xl overflow-y-auto border-l">
+        {content}
       </div>
     </>
   )
