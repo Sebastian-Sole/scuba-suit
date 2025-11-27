@@ -7,7 +7,6 @@ You are tasked with creating detailed implementation plans through an interactiv
 When this command is invoked:
 
 1. **Check if parameters were provided**:
-
    - If a file path or ticket reference was provided as a parameter, skip the default message
    - Immediately read any provided files FULLY
    - Begin the research process
@@ -35,7 +34,6 @@ Then wait for the user's input.
 ### Step 1: Context Gathering & Initial Analysis
 
 1. **Read all mentioned files immediately and FULLY**:
-
    - Ticket files (e.g., `.claude/tickets/0001-add-button.md`)
    - Research documents
    - Related implementation plans
@@ -46,25 +44,21 @@ Then wait for the user's input.
 
 2. **Spawn initial research tasks to gather context**:
    Before asking the user any questions, use specialized agents to research in parallel:
-
    - Use the **codebase-locator** agent to find all files related to the ticket/task
    - Use the **codebase-analyzer** agent to understand how the current implementation works
    - If relevant, use the **experiences-locator** agent to find any existing experience documents about this feature
 
    These agents will:
-
    - Find relevant source files, configs, and tests
    - Trace data flow and key functions
    - Return detailed explanations with file:line references
 
 3. **Read all files identified by research tasks**:
-
    - After research tasks complete, read ALL files they identified as relevant
    - Read them FULLY into the main context
    - This ensures you have complete understanding before proceeding
 
 4. **Analyze and verify understanding**:
-
    - Cross-reference the ticket requirements with actual code
    - Identify any discrepancies or misunderstandings
    - Note assumptions that need verification
@@ -93,7 +87,6 @@ Then wait for the user's input.
 After getting initial clarifications:
 
 1. **If the user corrects any misunderstanding**:
-
    - DO NOT just accept the correction
    - Spawn new research tasks to verify the correct information
    - Read the specific files/directories they mention
@@ -102,23 +95,19 @@ After getting initial clarifications:
 2. **Create a research todo list** using TodoWrite to track exploration tasks
 
 3. **Spawn parallel sub-tasks for comprehensive research**:
-
    - Create multiple Task agents to research different aspects concurrently
    - Use the right agent for each type of research:
 
    **For deeper investigation:**
-
    - **codebase-locator** - To find more specific files (e.g., "find all files that handle [specific component]")
    - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
    - **codebase-pattern-finder** - To find similar features we can model after
 
    **For historical context:**
-
    - **experience-locator** - To find any research, plans, or decisions about this area
    - **experience-analyzer** - To extract key insights from the most relevant documents
 
    Each agent knows how to:
-
    - Find the right files and code patterns
    - Identify conventions and patterns to follow
    - Look for integration points and dependencies
@@ -173,13 +162,12 @@ Once aligned on approach:
 
 After structure approval:
 
-1. **Write the plan** to `.claude/plans/<ticket-name>/<YYMMDD>.md`
+1. **Write the plan** to `.claude/plans/<ticket-name>.md`
    - Format: `plan.md` where:
-     - ticket-name is the ticket file name (omit if no ticket)
-     - YYMMDD is the current date (year, month, day)
+     - ticket-name is the ticket file name (create a brief name if no ticket is provided)
    - Examples:
-     - With ticket: `.claude/plans/0001-add-button/250920.md`
-     - Without ticket: `.claude/plans/250920.md`
+     - `.claude/plans/0001-add-button.md`
+     - `.claude/plans/0002-pandacss-to-tailwind-migration.md`
 2. **Use this template structure**:
 
 ````markdown
@@ -278,22 +266,21 @@ After structure approval:
 
 ## References
 
-- Original ticket: `.claude/plans/0001-add-button/250920.md`
-- Related research: `.claude/experiences/research/0001-add-button.md`
+- Original ticket: `.claude/tickets/0001-add-button.md`
+- Related research: `.claude/experiences/react-component-implementation.md`
 - Similar implementation: `[file:line]`
 ````
 
 ### Step 5: Sync and Review
 
 1. **Sync the experiences directory**:
-
    - This ensures the plan is properly indexed and available
 
 2. **Present the draft plan location**:
 
    ```
    I've created the initial implementation plan at:
-   `.claude/plans/123/250920.md`
+   `.claude/plans/0001-add-button.md`
 
    Please review it and let me know:
    - Are the phases properly scoped?
@@ -303,7 +290,6 @@ After structure approval:
    ```
 
 3. **Iterate based on feedback** - be ready to:
-
    - Add missing phases
    - Adjust technical approach
    - Clarify success criteria (both automated and manual)
@@ -314,35 +300,31 @@ After structure approval:
 ## Important Guidelines
 
 1. **Be Skeptical**:
-
    - Question vague requirements
    - Identify potential issues early
    - Ask "why" and "what about"
    - Don't assume - verify with code
+   - If based off of an existing ticket, verify that the ticket is still relevant
 
 2. **Be Interactive**:
-
    - Don't write the full plan in one shot
    - Get buy-in at each major step
    - Allow course corrections
    - Work collaboratively
 
 3. **Be Thorough**:
-
    - Read all context files COMPLETELY before planning
    - Research actual code patterns using parallel sub-tasks
    - Include specific file paths and line numbers
    - Write measurable success criteria with clear automated vs manual distinction
 
 4. **Be Practical**:
-
    - Focus on incremental, testable changes
    - Consider migration and rollback
    - Think about edge cases
    - Include "what we're NOT doing"
 
 5. **Track Progress**:
-
    - Use TodoWrite to track planning tasks
    - Update todos as you complete research
    - Mark planning tasks complete when done
@@ -359,7 +341,6 @@ After structure approval:
 **Always separate success criteria into two categories:**
 
 1. **Automated Verification** (can be run by execution agents):
-
    - Commands that can be run: `pnpm test`, `pnpm lint`, `pnpm build` etc.
    - Specific files that should exist
    - Code compilation/type checking
@@ -451,7 +432,7 @@ tasks = [
 ## Example Interaction Flow
 
 ```
-User: /implementation_plan
+User: /create_plan
 Assistant: I'll help you create a detailed implementation plan...
 
 User: We need to add parent-child tracking for Claude sub-tasks. See tickets/0001-add-button.md

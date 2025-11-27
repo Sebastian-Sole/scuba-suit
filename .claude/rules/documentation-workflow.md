@@ -157,7 +157,7 @@ date: [Current date and time with timezone in ISO format]
 git_commit: [Current commit hash]
 branch: [Current branch name]
 repository: [Repository name]
-topic: "[Research Question/Topic]"
+topic: '[Research Question/Topic]'
 tags: [research, codebase, relevant-component-names]
 status: complete
 last_updated: [Current date in YYYY-MM-DD format]

@@ -1,7 +1,3 @@
----
-alwaysApply: true
----
-
 # Coding Standards & Rules
 
 ## 🎯 **Core Mission**
@@ -13,8 +9,8 @@ Build a responsive web application that displays and analyzes code performance m
 ### **Core Architecture (Locked)**
 
 - **Next.js 15.5.2** with App Router - Do not downgrade or switch to Pages Router
-- **React 19.1.0** with TypeScript - Do not downgrade React version
-- **Panda CSS 1.2.0+** with Park UI preset - Do not replace with other CSS frameworks
+- **React 19.2.0** with TypeScript - Do not downgrade React version
+- **Tailwind CSS 3.4.17** for styling - Do not replace with other CSS frameworks
 - **NextAuth 5.0.0-beta.29** for authentication - Keep Azure AD integration
 - **Vitest 3.2.4+** for testing - Do not switch to Jest
 - **Playwright 1.55.0+** for E2E testing - Keep browser automation setup
@@ -36,13 +32,14 @@ src/
 │   ├── layout/            # Headers, navigation, providers
 │   ├── navigation/        # Navigation components
 │   └── ui/                # Reusable UI primitives
+├── hooks/                 # Custom React hooks
 ├── lib/
 │   ├── api-client/        # Auto-generated API client - DO NOT MODIFY
 │   ├── api-client-init.ts # API client configuration
-│   └── auth.ts            # NextAuth configuration
-├── styles/
-│   ├── recipes/           # Panda CSS component recipes
-│   └── tokens/            # Design tokens
+│   ├── auth.ts            # NextAuth configuration
+│   ├── sanity/            # Sanity CMS integration
+│   └── utils.ts           # Utility functions (cn, etc.)
+├── types/                 # TypeScript type definitions
 └── utils/                 # Utility functions
 ```
 
@@ -50,7 +47,7 @@ src/
 
 ```typescript
 // DO NOT REMOVE - Core types for the API
-export type SiteDto = {
+export type ProjectDto = {
   id: string;
   name: string;
   lastUpdated: string;
@@ -88,7 +85,7 @@ export type Session = {
 
 - Hey API client for backend communication
 - NextAuth for Azure AD authentication
-- Panda CSS for consistent styling
+- Tailwind CSS for consistent styling
 - Comprehensive testing with Vitest and Playwright
 - Type-safe API integration with auto-generated clients
 
@@ -99,21 +96,10 @@ export type Session = {
 ```typescript
 // Use explicit types for all props and API responses
 interface ComponentProps {
-  projects: SiteDto[];
+  projects: ProjectDto[];
   onProjectSelect?: (id: string) => void;
   className?: string;
 }
-
-// Use proper error handling with typed errors
-const fetchProjects = async (): Promise<SiteDto[] | null> => {
-  try {
-    const response = await getApiSitesAllSites();
-    return response.data ?? [];
-  } catch (error) {
-    console.error("Failed to fetch projects:", error);
-    return null;
-  }
-};
 
 // Use Zod for runtime validation when needed
 import { z } from "zod";
@@ -131,22 +117,15 @@ const projectSchema = z.object({
 // Server Components for data fetching
 export default async function ProjectsPage() {
   const projects = await getApiSitesAllSites();
-
   return <ProjectsTable projects={projects.data ?? []} />;
 }
 
 // Client Components for interactivity
-("use client");
+'use client';
 
 export default function InteractiveChart({ data }: ChartProps) {
-  const [selectedMetric, setSelectedMetric] = useState("performance");
-
-  return (
-    <div>
-      <MetricSelector onSelect={setSelectedMetric} />
-      <Chart data={data} metric={selectedMetric} />
-    </div>
-  );
+  const [selectedMetric, setSelectedMetric] = useState('performance');
+  return <Chart data={data} metric={selectedMetric} />;
 }
 
 // Loading and error boundaries
@@ -164,162 +143,122 @@ export default function Error({ error }: { error: Error }) {
 }
 ```
 
-### **Component Structure**
+### **Component Structure & Styling**
 
 ```typescript
-// Order: imports, types, utils, main component
-import React from "react";
-import { css } from "@/styled-system/css";
-import { SiteDto } from "@/lib/api-client";
+// Order: imports, types, variants, component
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+import { ProjectDto } from '@/lib/api-client';
 
-// Component-specific types
-interface ProjectCardProps {
-  project: SiteDto;
-  size?: "sm" | "md" | "lg";
-  interactive?: boolean;
+// Component variants with CVA
+const cardVariants = cva(
+  'rounded-lg border bg-card p-4 shadow-sm transition-colors',
+  {
+    variants: {
+      size: {
+        sm: 'p-3 text-sm',
+        md: 'p-4',
+        lg: 'p-6 text-lg',
+      },
+      interactive: {
+        true: 'cursor-pointer hover:bg-accent',
+        false: '',
+      },
+    },
+    defaultVariants: { size: 'md', interactive: false },
+  }
+);
+
+interface ProjectCardProps extends VariantProps<typeof cardVariants> {
+  project: ProjectDto;
   onSelect?: (id: string) => void;
+  className?: string;
 }
 
-// Utility functions
-const formatScore = (score: number): string => {
-  return `${score}%`;
-};
-
-// Main component
 export default function ProjectCard({
   project,
-  size = "md",
-  interactive = false,
+  size,
+  interactive,
   onSelect,
+  className
 }: ProjectCardProps) {
-  // State declarations
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // Event handlers
-  const handleClick = () => {
-    if (interactive && onSelect) {
-      onSelect(project.id);
-    }
-  };
-
-  // Render
   return (
-    <div className={card({ size, interactive })} onClick={handleClick}>
+    <div
+      className={cn(cardVariants({ size, interactive }), className)}
+      onClick={() => interactive && onSelect?.(project.id)}
+    >
       {/* Component content */}
     </div>
   );
 }
-```
 
-### **Styling with Panda CSS**
+// Conditional styling with cn() utility
+<div className={cn(
+  "bg-surface text-primary p-4 rounded-md",
+  isActive && "ring-2 ring-primary",
+  className
+)} />
 
-```typescript
-// Use design tokens and semantic colors
-import { css } from "@/styled-system/css";
-
-const styles = css({
-  bg: "bg.surface",
-  color: "text.primary",
-  p: "lg",
-  borderRadius: "md",
-  shadow: "sm",
-});
-
-// Use recipes for component variants
-import { card } from "@/styled-system/recipes";
-
-const cardStyles = card({
-  size: "md",
-  interactive: true,
-});
-
-// Responsive design with breakpoints
-const responsiveStyles = css({
-  display: "grid",
-  gridTemplateColumns: {
-    base: "1fr",
-    md: "repeat(2, 1fr)",
-    lg: "repeat(3, 1fr)",
-  },
-  gap: { base: "md", lg: "lg" },
-});
+// Responsive design with Tailwind breakpoints
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+  {/* Responsive grid */}
+</div>
 ```
 
 ### **API Integration Patterns**
 
 ```typescript
 // Use auto-generated Hey API client
-import { getApiSitesAllSites, type SiteDto } from "@/lib/api-client";
+import { getApiSitesAllSites, type ProjectDto } from '@/lib/api-client';
 
 // Server-side data fetching
 export default async function ProjectsPage() {
   try {
     const response = await getApiSitesAllSites();
-    const projects = response.data ?? [];
-
-    return <ProjectsTable projects={projects} />;
+    return <ProjectsTable projects={response.data ?? []} />;
   } catch (error) {
-    console.error("Failed to fetch projects:", error);
+    console.error('Failed to fetch projects:', error);
     return <ErrorBoundary error="Failed to load projects" />;
   }
 }
 
-// Client-side data fetching with error handling
+// Client-side data fetching hook
 const useProjects = () => {
-  const [projects, setProjects] = useState<SiteDto[]>([]);
+  const [projects, setProjects] = useState<ProjectDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const response = await getApiSitesAllSites();
-        setProjects(response.data ?? []);
-        setError(null);
-      } catch (err) {
-        setError("Failed to fetch projects");
-        console.error("API Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
+    getApiSitesAllSites()
+      .then(res => setProjects(res.data ?? []))
+      .catch(err => console.error('API Error:', err))
+      .finally(() => setLoading(false));
   }, []);
 
-  return { projects, loading, error };
+  return { projects, loading };
 };
 ```
 
 ### **Authentication Integration**
 
 ```typescript
-// Use NextAuth session in components
-import { auth } from "@/lib/auth";
-
 // Server Components
+import { auth } from '@/lib/auth';
+
 export default async function ProtectedPage() {
   const session = await auth();
-
-  if (!session) {
-    redirect("/auth/signin");
-  }
-
+  if (!session) redirect('/auth/signin');
   return <Dashboard user={session.user} />;
 }
 
 // Client Components
-("use client");
-
-import { useSession } from "next-auth/react";
+'use client';
+import { useSession } from 'next-auth/react';
 
 export default function UserProfile() {
   const { data: session, status } = useSession();
-
-  if (status === "loading") return <Spinner />;
-  if (status === "unauthenticated") return <SignInPrompt />;
-
+  if (status === 'loading') return <Spinner />;
+  if (!session) return <SignInPrompt />;
   return <Profile user={session.user} />;
 }
 ```
@@ -329,13 +268,8 @@ export default function UserProfile() {
 ### **Before Making Changes**
 
 ```bash
-# Check current state
-pnpm typecheck
-pnpm lint
-pnpm test
-
-# Generate API client if schema changed
-pnpm codegen
+pnpm typecheck && pnpm lint && pnpm test
+pnpm codegen  # If API schema changed
 ```
 
 ### **Change Process**
@@ -362,18 +296,13 @@ pnpm codegen
 - ❌ No manual API client modifications (use `pnpm codegen`)
 - ❌ No Pages Router patterns in App Router project
 - ❌ No client-side authentication logic (use NextAuth)
-- ❌ No inline styles (use Panda CSS system)
+- ❌ No inline styles (use Tailwind CSS classes)
 
-### **Performance Killers**
+### **Performance & Code Quality**
 
 - ❌ Don't fetch data in client components without caching
 - ❌ Don't create objects in render methods
 - ❌ Don't forget to memoize expensive calculations
-- ❌ Don't ignore Next.js caching mechanisms
-- ❌ Don't bundle large dependencies on client side
-
-### **Code Quality**
-
 - ❌ No `console.log` statements in production code
 - ❌ No `any` types (use proper TypeScript)
 - ❌ No hardcoded values (use environment variables/tokens)
@@ -389,21 +318,6 @@ pnpm codegen
 - Responsive design for desktop and mobile
 - Accessible design following WCAG guidelines
 - Consistent spacing and typography using design tokens
-
-### **Component Hierarchy**
-
-```
-App Layout
-├── Navigation Header
-│   ├── Logo/Brand
-│   ├── Main Navigation
-│   └── User Menu
-├── Page Content
-│   ├── Title Header
-│   ├── Data Tables/Charts
-│   └── Action Controls
-└── Footer (if needed)
-```
 
 ### **Interaction Patterns**
 
@@ -425,255 +339,112 @@ App Layout
 
 ### **Testing Philosophy**
 
-```typescript
-// ✅ CORRECT: Test user behavior, not implementation
-describe("ProjectsTable", () => {
-  it("should display projects and allow sorting", async () => {
-    const user = userEvent.setup();
-    const mockProjects = createMockProjects();
+Test user behavior, not implementation details:
 
+```typescript
+// ✅ CORRECT: Test user behavior
+describe('ProjectsTable', () => {
+  it('should display and sort projects', async () => {
     render(<ProjectsTable projects={mockProjects} />);
 
-    // Check data is displayed
-    expect(screen.getByText("Test Project 1")).toBeInTheDocument();
+    expect(screen.getByText('Test Project 1')).toBeInTheDocument();
 
-    // Test sorting interaction
-    await user.click(
-      screen.getByRole("button", { name: /sort by performance/i })
-    );
+    await userEvent.click(screen.getByRole('button', { name: /sort/i }));
 
-    // Verify sorting result
-    const rows = screen.getAllByRole("row");
-    expect(rows[1]).toHaveTextContent("Test Project 1"); // Highest score first
+    const rows = screen.getAllByRole('row');
+    expect(rows[1]).toHaveTextContent('Test Project 1');
   });
 });
 
 // ❌ WRONG: Testing implementation details
-expect(component.state.sortColumn).toBe("performance");
+expect(component.state.sortColumn).toBe('performance');
 ```
 
 ### **Test Organization**
 
 ```
 test/
-├── unit/                   # Component and utility tests
-│   ├── components/
-│   ├── utils/
-│   └── hooks/
-├── integration/            # API integration tests
-│   └── api/
-├── e2e/                    # End-to-end tests
-│   ├── auth.spec.ts
-│   ├── dashboard.spec.ts
-│   └── projects.spec.ts
-├── utils.ts               # Test utilities and mocks
-└── vitestSetup.ts         # Test environment setup
+├── unit/           # Component and utility tests
+├── integration/    # API integration tests
+├── e2e/           # End-to-end tests
+├── utils.ts       # Test utilities and mocks
+└── vitestSetup.ts # Test environment setup
 ```
 
-### **API Testing Patterns**
+## 📱 **Responsive Design**
+
+### **Tailwind Breakpoints**
+
+- `sm` (640px), `md` (768px), `lg` (1024px), `xl` (1280px), `2xl` (1536px)
 
 ```typescript
-// Mock API responses for reliable testing
-import { createMockProjects } from "@/test/utils";
+// Responsive grid
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6" />
 
-describe("Project API Integration", () => {
-  it("should handle successful data fetch", async () => {
-    const mockData = createMockProjects();
+// Responsive text and spacing
+<div className="text-sm p-4 md:text-base md:p-6 lg:text-lg lg:p-8" />
 
-    // Mock the API call
-    vi.mocked(getApiSitesAllSites).mockResolvedValue({
-      data: mockData,
-      error: null,
-    });
+// Responsive visibility
+<div className="hidden md:block" />  // Hidden on mobile
+<div className="block md:hidden" />  // Visible on mobile only
 
-    render(<ProjectsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Test Project 1")).toBeInTheDocument();
-    });
-  });
-
-  it("should handle API errors gracefully", async () => {
-    vi.mocked(getApiSitesAllSites).mockRejectedValue(
-      new Error("Network error")
-    );
-
-    render(<ProjectsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/failed to load projects/i)).toBeInTheDocument();
-    });
-  });
-});
+// Responsive layout
+<div className="flex flex-col md:flex-row gap-4" />
 ```
 
-## 📱 **Responsive Design Standards**
+## 🔒 **Security & Performance**
 
-### **Breakpoint Strategy**
-
-```typescript
-// Use Panda CSS breakpoints consistently
-import { breakpoints } from "@/styles/breakpoints";
-
-const responsiveGrid = css({
-  display: "grid",
-  gridTemplateColumns: {
-    base: "1fr", // Mobile: single column
-    md: "repeat(2, 1fr)", // Tablet: two columns
-    lg: "repeat(3, 1fr)", // Desktop: three columns
-    xl: "repeat(4, 1fr)", // Large desktop: four columns
-  },
-  gap: { base: "md", lg: "lg" },
-});
-```
-
-### **Mobile-First Approach**
-
-```typescript
-// Start with mobile styles, enhance for larger screens
-const mobileFirstStyles = css({
-  // Base styles (mobile)
-  fontSize: "sm",
-  p: "md",
-
-  // Enhanced for larger screens
-  md: {
-    fontSize: "md",
-    p: "lg",
-  },
-
-  lg: {
-    fontSize: "lg",
-    p: "xl",
-  },
-});
-```
-
-## 🔒 **Security Guidelines**
-
-### **Authentication Security**
+### **Security Best Practices**
 
 ```typescript
 // Always validate sessions server-side
 export default async function ProtectedApiRoute() {
   const session = await auth();
-
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  // Proceed with authenticated request
 }
 
 // Use environment variables for sensitive data
 import { env } from "@/env";
-
 const apiConfig = {
   baseUrl: env.API_BASE_URL,
   clientSecret: env.AZURE_AD_CLIENT_SECRET, // Never expose in client
 };
-```
 
-### **Data Validation**
-
-```typescript
 // Validate all inputs with Zod
-import { z } from "zod";
-
-const projectUpdateSchema = z.object({
+const schema = z.object({
   id: z.string().uuid(),
   name: z.string().min(1).max(100),
   metrics: z.object({
     performance: z.number().min(0).max(100),
-    accessibility: z.number().min(0).max(100),
   }),
 });
-
-export async function updateProject(data: unknown) {
-  const validData = projectUpdateSchema.parse(data);
-  // Safe to use validData
-}
 ```
 
-## 🚀 **Performance Optimization**
-
-### **Next.js Optimization**
+### **Performance Optimization**
 
 ```typescript
-// Use Next.js caching strategies
+// Next.js caching
 export const revalidate = 600; // Cache for 10 minutes
 
-// Implement proper loading states
-export default function Loading() {
-  return <ProjectsTableSkeleton />;
-}
-
-// Use dynamic imports for large components
-const HeavyChart = dynamic(() => import("./HeavyChart"), {
+// Dynamic imports for large components
+const HeavyChart = dynamic(() => import('./HeavyChart'), {
   loading: () => <ChartSkeleton />,
-  ssr: false, // If chart doesn't work server-side
+  ssr: false,
 });
-```
 
-### **React Optimization**
-
-```typescript
 // Memoize expensive calculations
-const sortedProjects = useMemo(() => {
-  return projects.sort((a, b) => b.average - a.average);
-}, [projects]);
+const sortedProjects = useMemo(() =>
+  projects.sort((a, b) => b.average - a.average),
+  [projects]
+);
 
-// Optimize re-renders with memo and callback
-const ProjectCard = memo(({ project, onSelect }: ProjectCardProps) => {
-  const handleClick = useCallback(() => {
-    onSelect?.(project.id);
-  }, [project.id, onSelect]);
-
+// Optimize re-renders
+const ProjectCard = memo(({ project, onSelect }: Props) => {
+  const handleClick = useCallback(() => onSelect?.(project.id), [project.id, onSelect]);
   return <div onClick={handleClick}>{project.name}</div>;
 });
-```
-
-## 📊 **Analytics and Monitoring**
-
-### **Error Tracking**
-
-```typescript
-// Implement proper error boundaries
-export default function GlobalErrorBoundary({
-  error,
-  reset,
-}: {
-  error: Error;
-  reset: () => void;
-}) {
-  useEffect(() => {
-    // Log error to monitoring service
-    console.error("Global error:", error);
-  }, [error]);
-
-  return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button onClick={reset}>Try again</button>
-    </div>
-  );
-}
-```
-
-### **Performance Monitoring**
-
-```typescript
-// Monitor key metrics
-useEffect(() => {
-  const startTime = performance.now();
-
-  return () => {
-    const loadTime = performance.now() - startTime;
-    if (loadTime > 1000) {
-      console.warn(`Slow component render: ${loadTime}ms`);
-    }
-  };
-}, []);
 ```
 
 ## 🎯 **Success Metrics**
@@ -701,4 +472,6 @@ useEffect(() => {
 - [ ] Error states are user-friendly
 - [ ] Authentication flow is seamless
 
-This comprehensive coding standards document ensures consistency, maintainability, and alignment with the project's core mission of providing a high-quality scoreboard application for code performance analysis.
+---
+
+This document ensures consistency, maintainability, and alignment with the project's core mission of providing a high-quality scoreboard application for code performance analysis.
