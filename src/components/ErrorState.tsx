@@ -26,23 +26,29 @@ export function ErrorState({
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold mb-2">
-        Something went wrong
-      </h3>
+      <h3 className="text-lg font-semibold mb-2">Something went wrong</h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-sm">{message}</p>
       <div className="flex gap-2">
         {onRetry && (
           <button
-            onClick={onRetry}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onRetry()
+            }}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-none"
           >
             Try Again
           </button>
         )}
         {onClose && (
           <button
-            onClick={onClose}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
+            onTouchEnd={(e) => e.stopPropagation()}
+            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/80 transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 touch-none"
           >
             Close
           </button>

@@ -246,7 +246,9 @@ export function SidebarTable({
                   <Link
                     to="/store"
                     search={{ category: 'Wetsuits' }}
-                    className="mt-4 inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+                    className="mt-4 inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 transition-colors touch-none"
+                    onClick={(e) => e.stopPropagation()}
+                    onTouchEnd={(e) => e.stopPropagation()}
                   >
                     Shop for Suits
                   </Link>
