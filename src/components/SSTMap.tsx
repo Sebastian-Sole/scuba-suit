@@ -7,6 +7,7 @@ import { MapPin } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
 import { MapHelpMenu } from './MapHelpMenu'
 import type { Map as MapLibreMap } from 'maplibre-gl'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export interface SSTMapProps {
   onMapClick?: (lat: number, lon: number) => void
@@ -27,6 +28,9 @@ export const SSTMap = memo(function SSTMap({
   isSelectionMode = false,
   onToggleSelectionMode,
 }: SSTMapProps) {
+  // Detect mobile viewport (< 640px = Tailwind's sm breakpoint)
+  const isMobile = useMediaQuery('(max-width: 639px)')
+
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<MapLibreMap | null>(null)
   const [isMapLoaded, setIsMapLoaded] = useState(false)
@@ -72,8 +76,9 @@ export const SSTMap = memo(function SSTMap({
     if (!map.current || !onMapClick || !isMapLoaded) return
 
     const handleClick = (e: maplibregl.MapMouseEvent) => {
-      // Only handle clicks when in selection mode
-      if (!isSelectionMode) return
+      // On mobile: always handle clicks (no selection mode needed)
+      // On desktop: only handle clicks when in selection mode
+      if (!isMobile && !isSelectionMode) return
 
       const lat = e.lngLat.lat
       const lon = e.lngLat.lng
@@ -112,7 +117,7 @@ export const SSTMap = memo(function SSTMap({
     return () => {
       map.current?.off('click', handleClick)
     }
-  }, [onMapClick, isMapLoaded, isSelectionMode, onToggleSelectionMode])
+  }, [onMapClick, isMapLoaded, isSelectionMode, onToggleSelectionMode, isMobile])
 
   // Create marker once when map loads
   useEffect(() => {
