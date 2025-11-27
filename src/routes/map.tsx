@@ -10,6 +10,8 @@ import { SidebarTable } from '@/components/SidebarTable'
 import { SSTMap } from '@/components/SSTMap'
 import { getTodayISO } from '@/lib/dates'
 import { useNavbarContent } from '@/components/NavbarContext'
+import { Drawer, DrawerContent } from '@/components/ui/drawer'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 // URL search params schema
 const searchSchema = z.object({
@@ -52,6 +54,9 @@ function MapPage() {
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lon: number; display?: string } | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [isSelectionMode, setIsSelectionMode] = useState(false)
+
+  // Detect mobile viewport (< 640px = Tailwind's sm breakpoint)
+  const isMobile = useMediaQuery('(max-width: 639px)')
 
   // Memoize initial center to prevent map reinitialization
   const initialCenter = useMemo<[number, number] | undefined>(() => {
@@ -214,8 +219,14 @@ function MapPage() {
           {/* Button to reopen drawer on mobile */}
           {!isDrawerOpen && selectedPoint && (
             <button
-              onClick={() => setIsDrawerOpen(true)}
-              className="md:hidden absolute bottom-4 right-4 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 z-20 hover:bg-primary/90 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsDrawerOpen(true)
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation()
+              }}
+              className="md:hidden absolute bottom-4 right-4 bg-primary text-primary-foreground px-4 py-3 rounded-lg shadow-lg text-sm font-medium flex items-center gap-2 z-20 hover:bg-primary/90 transition-colors touch-none"
               aria-label="View location details"
             >
               <MapPin className="w-4 h-4" aria-hidden="true" />
@@ -230,22 +241,58 @@ function MapPage() {
             <LoadingSkeleton />
           </div>
         ) : pointError ? (
-          <div className="fixed md:relative bottom-0 md:bottom-auto left-0 right-0 md:left-auto md:right-auto w-full md:w-96 h-[45vh] md:h-full bg-background shadow-xl overflow-y-auto z-40 md:z-auto rounded-t-2xl md:rounded-none flex items-center justify-center">
-            <ErrorState
-              message={pointError}
-              onRetry={() => {
-                if (searchParams.lat && searchParams.lon) {
-                  handleMapClick(searchParams.lat, searchParams.lon)
+          <>
+            {/* Mobile: Error in Drawer */}
+            {isMobile && (
+              <Drawer open={true} onOpenChange={(open) => {
+                if (!open) {
+                  setPointError(null)
+                  setSelectedPoint(null)
+                  setSelectedLocation(null)
+                  void navigate({ search: {} as any })
                 }
-              }}
-              onClose={() => {
-                setPointError(null)
-                setSelectedPoint(null)
-                setSelectedLocation(null)
-                void navigate({ search: {} as any })
-              }}
-            />
-          </div>
+              }} direction="bottom">
+                <DrawerContent className="max-h-[60vh]">
+                  <div className="overflow-y-auto max-h-[60vh]">
+                    <ErrorState
+                      message={pointError}
+                      onRetry={() => {
+                        if (searchParams.lat && searchParams.lon) {
+                          handleMapClick(searchParams.lat, searchParams.lon)
+                        }
+                      }}
+                      onClose={() => {
+                        setPointError(null)
+                        setSelectedPoint(null)
+                        setSelectedLocation(null)
+                        void navigate({ search: {} as any })
+                      }}
+                    />
+                  </div>
+                </DrawerContent>
+              </Drawer>
+            )}
+
+            {/* Desktop: Error in Fixed Sidebar */}
+            {!isMobile && (
+              <div className="w-96 h-full bg-background shadow-xl overflow-y-auto border-l flex items-center justify-center">
+                <ErrorState
+                  message={pointError}
+                  onRetry={() => {
+                    if (searchParams.lat && searchParams.lon) {
+                      handleMapClick(searchParams.lat, searchParams.lon)
+                    }
+                  }}
+                  onClose={() => {
+                    setPointError(null)
+                    setSelectedPoint(null)
+                    setSelectedLocation(null)
+                    void navigate({ search: {} as any })
+                  }}
+                />
+              </div>
+            )}
+          </>
         ) : (
           selectedPoint && (
             <SidebarTable
