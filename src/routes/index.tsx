@@ -79,7 +79,7 @@ function LandingPage() {
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-cyan-600 to-blue-800 text-white">
         <div className="absolute inset-0 bg-[url('/ocean-pattern.svg')] opacity-10" />
-        <div className="relative container mx-auto px-4 py-16 md:py-24">
+        <div className="relative container mx-auto px-4 py-16 md:py-24 pb-32 md:pb-40">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Plan Your Perfect Scuba Diving Trip
@@ -89,7 +89,7 @@ function LandingPage() {
             </p>
 
             {/* Search Input CTA */}
-            <div className="bg-card text-card-foreground rounded-xl shadow-2xl p-6 max-w-2xl mx-auto border">
+            <div className="bg-card text-card-foreground rounded-xl shadow-2xl p-6 max-w-2xl mx-auto border overflow-visible">
               <label className="block text-left font-medium mb-4">
                 Where and when are you diving?
               </label>

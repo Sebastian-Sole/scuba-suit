@@ -154,25 +154,63 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
   }, [selectedIndex])
 
   return (
-    <div className="relative">
+    <div>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value)
-            setIsUserTyping(true)
-          }}
-          onKeyDown={handleKeyDown}
-          onFocus={() => results.length > 0 && setShowResults(true)}
-          placeholder="Search for a location..."
-          aria-label="Search for a location"
-          aria-autocomplete="list"
-          aria-controls="search-results"
-          aria-expanded={showResults && results.length > 0}
-          className="w-full sm:flex-1 px-3 py-1.5 text-sm md:text-base rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px] md:min-h-[40px]"
-        />
+        <div className="relative w-full sm:flex-1">
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setIsUserTyping(true)
+            }}
+            onKeyDown={handleKeyDown}
+            onFocus={() => results.length > 0 && setShowResults(true)}
+            placeholder="Search for a location..."
+            aria-label="Search for a location"
+            aria-autocomplete="list"
+            aria-controls="search-results"
+            aria-expanded={showResults && results.length > 0}
+            className="w-full px-3 py-1.5 text-sm md:text-base rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px] md:min-h-[40px]"
+          />
+
+          {/* Results dropdown */}
+          {showResults && results.length > 0 && (
+            <div
+              id="search-results"
+              role="listbox"
+              className="absolute top-full mt-2 w-full bg-background rounded-lg shadow-lg border z-50 max-h-64 overflow-y-auto"
+            >
+              {results.map((result, i) => (
+                <button
+                  key={i}
+                  ref={(el) => {
+                    resultsRef.current[i] = el
+                  }}
+                  role="option"
+                  aria-selected={i === selectedIndex}
+                  onClick={() => {
+                    onSelectLocation(result.lat, result.lon, result.display)
+                    setQuery(result.display)
+                    setShowResults(false)
+                    setResults([])
+                    setSelectedIndex(-1)
+                    setIsUserTyping(false)
+                  }}
+                  className={`w-full px-4 py-3 text-left transition-colors border-b last:border-b-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary min-h-[44px] ${
+                    i === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
+                  }`}
+                >
+                  <div className="text-sm font-medium">{result.display}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {result.lat.toFixed(4)}, {result.lon.toFixed(4)}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {selectedDateTime && onDateTimeChange && (
           <div className="flex gap-2">
             <DateTimePicker
@@ -189,42 +227,6 @@ export const SearchBar = memo(function SearchBar({ onSelectLocation, selectedDat
           {isSearching ? 'Searching...' : 'Search'}
         </button>
       </form>
-
-      {/* Results dropdown */}
-      {showResults && results.length > 0 && (
-        <div
-          id="search-results"
-          role="listbox"
-          className="absolute top-full mt-2 w-full bg-background rounded-lg shadow-lg border z-50 max-h-64 overflow-y-auto"
-        >
-          {results.map((result, i) => (
-            <button
-              key={i}
-              ref={(el) => {
-                resultsRef.current[i] = el
-              }}
-              role="option"
-              aria-selected={i === selectedIndex}
-              onClick={() => {
-                onSelectLocation(result.lat, result.lon, result.display)
-                setQuery(result.display)
-                setShowResults(false)
-                setResults([])
-                setSelectedIndex(-1)
-                setIsUserTyping(false)
-              }}
-              className={`w-full px-4 py-3 text-left transition-colors border-b last:border-b-0 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary min-h-[44px] ${
-                i === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
-              }`}
-            >
-              <div className="text-sm font-medium">{result.display}</div>
-              <div className="text-xs text-muted-foreground">
-                {result.lat.toFixed(4)}, {result.lon.toFixed(4)}
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 })
