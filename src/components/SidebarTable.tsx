@@ -4,6 +4,7 @@ import {
   Drawer,
   DrawerContent,
 } from '@/components/ui/drawer'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 
 export interface SidebarRow {
   date: string
@@ -42,6 +43,9 @@ export function SidebarTable({
   open = true,
   onOpenChange,
 }: SidebarTableProps) {
+  // Detect mobile viewport (< 640px = Tailwind's sm breakpoint)
+  const isMobile = useMediaQuery('(max-width: 639px)')
+
   // Shared content for both mobile drawer and desktop sidebar
   const content = (
     <>
@@ -256,19 +260,23 @@ export function SidebarTable({
 
   return (
     <>
-      {/* Mobile: Drawer */}
-      <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
-        <DrawerContent className="md:hidden max-h-[60vh]">
-          <div className="overflow-y-auto max-h-[60vh]">
-            {content}
-          </div>
-        </DrawerContent>
-      </Drawer>
+      {/* Mobile: Drawer (only render on mobile to prevent overlay on desktop) */}
+      {isMobile && (
+        <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
+          <DrawerContent className="max-h-[60vh]">
+            <div className="overflow-y-auto max-h-[60vh]">
+              {content}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
 
-      {/* Desktop: Fixed Sidebar */}
-      <div className="hidden md:block md:w-96 h-full bg-background shadow-xl overflow-y-auto border-l">
-        {content}
-      </div>
+      {/* Desktop: Fixed Sidebar (only render on desktop) */}
+      {!isMobile && (
+        <div className="w-96 h-full bg-background shadow-xl overflow-y-auto border-l">
+          {content}
+        </div>
+      )}
     </>
   )
 }
